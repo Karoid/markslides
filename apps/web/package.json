@@ -12,6 +12,7 @@
     "@markslides/editor": "*",
     "@markslides/renderer": "*",
     "@markslides/ui": "*",
+    "@prisma/client": "^5.7.1",
     "@reduxjs/toolkit": "^2.2.5",
     "@uidotdev/usehooks": "^2.4.1",
     "browser-fs-access": "^0.35.0",
@@ -33,6 +34,7 @@
     "@types/react": "^18.0.22",
     "@types/react-dom": "^18.0.7",
     "eslint": "^8.53.0",
+    "prisma": "^5.7.1",
     "typescript": "^5.2.2"
   }
 }

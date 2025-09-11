@@ -6,7 +6,8 @@
     "dev": "turbo dev --concurrency 20",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "publish-packages": "turbo run build && changeset version && changeset publish"
+    "publish-packages": "turbo run build && changeset version && changeset publish",
+    "db:migrate": "prisma migrate dev"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -22,6 +23,9 @@
     "apps/*",
     "packages/*"
   ],
+  "prisma": {
+    "schema": "apps/web/prisma/schema.prisma"
+  },
   "dependencies": {
     "@changesets/cli": "^2.27.1"
   }

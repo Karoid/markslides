@@ -6,7 +6,6 @@ import { Box } from '@markslides/ui/box';
 import useShortcutsExtension from '@/hooks/app/useShortcutsExtension';
 import EditorHeader from '@/components/base/editor/EditorLayout/EditorHeader';
 import EditorMenuBar from '@/components/base/editor/EditorLayout/EditorMenuBar';
-import CurrentFileName from '@/components/base/editor/EditorLayout/CurrentFileName';
 
 interface EditorLayoutProps extends PropsWithChildren<{}> {}
 
@@ -22,10 +21,9 @@ function EditorLayout(props: EditorLayoutProps) {
             <Flex
                 height='32px'
                 alignItems='center'
-                justifyContent='space-between'
+                justifyContent='flex-start'
                 backgroundColor='white'>
                 <EditorMenuBar />
-                <CurrentFileName />
             </Flex>
 
             <Box

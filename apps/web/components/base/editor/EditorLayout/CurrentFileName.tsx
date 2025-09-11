@@ -7,11 +7,11 @@ import useAppSelector from '@/redux/hooks/useAppSelector';
 interface CurrentFileNameProps {}
 
 function CurrentFileName(props: CurrentFileNameProps) {
-    const currentFileHandle = useAppSelector(
-        (state) => state.app.currentFileHandle
+    const localTitle = useAppSelector(
+        (state) => state.local.title
     );
 
-    if (currentFileHandle) {
+    if (localTitle) {
         return (
             <Flex
                 marginRight='16px'
@@ -20,12 +20,12 @@ function CurrentFileName(props: CurrentFileNameProps) {
                 <Tooltip
                     hasArrow={true}
                     placement='bottom'
-                    label='Current file'
-                    aria-label='current file tooltip'>
+                    label='Current document'
+                    aria-label='current document tooltip'>
                     <Text
                         fontSize='0.8rem'
                         color='black'>
-                        {currentFileHandle.name}
+                        {localTitle}
                     </Text>
                 </Tooltip>
             </Flex>
