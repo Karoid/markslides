@@ -1,4 +1,5 @@
 import { memo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Flex } from '@markslides/ui/flex';
 import { Button } from '@markslides/ui/button';
 import { Image } from '@markslides/ui/image';
@@ -12,6 +13,7 @@ import { setIsSlideShowMode } from '@/redux/slices/appSlice';
 import { setTitle } from '@/redux/slices/localSlice';
 
 function EditorHeader() {
+    const router = useRouter();
     const dispatch = useAppDispatch();
     const localTitle = useAppSelector((state) => state.local.title);
     const [isSaved, setIsSaved] = useState(true);
@@ -41,6 +43,10 @@ function EditorHeader() {
         setIsSaved(false);
     };
 
+    const handleLogoClick = () => {
+        router.push('/');
+    };
+
     return (
         <Flex
             height='40px'
@@ -57,7 +63,9 @@ function EditorHeader() {
                     style={{
                         width: 'auto',
                         height: '24px',
+                        cursor: 'pointer',
                     }}
+                    onClick={handleLogoClick}
                 />
                 
                 <Flex alignItems='center' gap='8px'>
@@ -81,6 +89,7 @@ function EditorHeader() {
                     
                     <Tooltip
                         label={isSaved ? '저장됨' : '저장 중...'}
+                        hasArrow={true}
                         placement='bottom'>
                         <Box>
                             <CloudIcon

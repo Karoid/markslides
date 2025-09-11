@@ -6,6 +6,7 @@ import { Box } from '@markslides/ui/box';
 import { Button } from '@markslides/ui/button';
 import { Text } from '@markslides/ui/text';
 import { Plus, FileText, Calendar, Edit, Trash2 } from 'lucide-react';
+import SlidePreview from '@/components/fragments/SlidePreview';
 
 interface Document {
   id: string;
@@ -183,61 +184,71 @@ function DashboardPage(): JSX.Element {
                 key={document.id}
                 backgroundColor='white'
                 borderRadius='12px'
-                padding='24px'
+                padding='0'
                 boxShadow='0 2px 8px rgba(0, 0, 0, 0.1)'
                 border='1px solid #e9ecef'
                 style={{
                   transition: 'all 0.2s ease',
                   cursor: 'pointer',
+                  overflow: 'hidden',
                 }}
                 onClick={() => router.push(`/slides/${document.id}`)}
               >
-                <Box display='flex' justifyContent='space-between' alignItems='flex-start' marginBottom='16px'>
-                  <Box flex='1'>
-                    <Text fontSize='18px' fontWeight='600' marginBottom='8px' color='#333'>
-                      {document.title}
-                    </Text>
-                    <Text fontSize='14px' color='#666' lineHeight='1.4'>
-                      {document.content.substring(0, 100)}
-                      {document.content.length > 100 && '...'}
-                    </Text>
-                  </Box>
-                  <Box
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteDocument(document.id);
-                    }}
-                    style={{
-                      padding: '8px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      color: '#dc3545',
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </Box>
+                {/* 슬라이드 미리보기 */}
+                <Box height='200px' position='relative' overflow='hidden'>
+                  <SlidePreview
+                    content={document.content}
+                    slideConfig={document.slideConfig}
+                    height='200px'
+                    width='100%'
+                  />
                 </Box>
 
-                <Box display='flex' justifyContent='space-between' alignItems='center' marginTop='16px'>
-                  <Box display='flex' alignItems='center' gap='8px' color='#666'>
-                    <Calendar size={14} />
-                    <Text fontSize='12px'>
-                      {formatDate(document.updatedAt)}
-                    </Text>
+                {/* 문서 정보 */}
+                <Box padding='16px'>
+                  <Box display='flex' justifyContent='space-between' alignItems='flex-start' marginBottom='12px'>
+                    <Box flex='1'>
+                      <Text fontSize='16px' fontWeight='600' marginBottom='4px' color='#333'>
+                        {document.title}
+                      </Text>
+                    </Box>
+                    <Box
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteDocument(document.id);
+                      }}
+                      style={{
+                        padding: '6px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        color: '#dc3545',
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </Box>
                   </Box>
-                  <Box
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/slides/${document.id}`);
-                    }}
-                    style={{
-                      padding: '8px',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      color: '#007bff',
-                    }}
-                  >
-                    <Edit size={16} />
+
+                  <Box display='flex' justifyContent='space-between' alignItems='center'>
+                    <Box display='flex' alignItems='center' gap='6px' color='#666'>
+                      <Calendar size={12} />
+                      <Text fontSize='11px'>
+                        {formatDate(document.updatedAt)}
+                      </Text>
+                    </Box>
+                    <Box
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/slides/${document.id}`);
+                      }}
+                      style={{
+                        padding: '6px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        color: '#007bff',
+                      }}
+                    >
+                      <Edit size={14} />
+                    </Box>
                   </Box>
                 </Box>
               </Box>
