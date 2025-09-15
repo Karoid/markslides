@@ -1,4 +1,5 @@
 # markdown-it-typograms
+
 Google Typograms plugin for markdown-it
 
 ## Installation
@@ -16,4 +17,5 @@ import markdownItTypograms from '@markslides/markdown-it-typograms';
 ```
 
 ## License
+
 This package releases under the MIT License.

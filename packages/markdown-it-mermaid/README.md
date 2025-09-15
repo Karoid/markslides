@@ -1,4 +1,5 @@
 # markdown-it-mermaid
+
 MermaidJS plugin for markdown-it
 
 ## Installation
@@ -16,4 +17,5 @@ import markdownItMermaid from '@markslides/markdown-it-mermaid';
 ```
 
 ## License
+
 This package releases under the MIT License.

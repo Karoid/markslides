@@ -8,19 +8,24 @@
 This is entrance repository of MarkSlides.
 
 ## Packages
+
 ### `@markslides/themes`
+
 Themes for MarkSlides.
 [🔗 link](https://github.com/markslides/markslides/tree/main/packages/themes)
 
 ### `@markslides/renderer`
+
 Markdown renderer for MarkSlides.
 [🔗 link](https://github.com/markslides/markslides/tree/main/packages/renderer)
 
 ### `@markslides/editor`
+
 Markdown editor for MarkSlides.
 [🔗 link](https://github.com/markslides/markslides/tree/main/packages/editor)
 
 ### `@markslides/ui`
+
 UI components for MarkSlides.
 [🔗 link](https://github.com/markslides/markslides/tree/main/packages/ui)
 
