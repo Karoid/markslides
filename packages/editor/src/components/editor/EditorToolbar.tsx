@@ -33,13 +33,14 @@ const ToolbarItem = styled.button`
 export interface EditorToolbarProps {
     toolbarCommands: ToolbarCommand[];
     codeMirrorRef: ReactCodeMirrorRef | null;
+    onOpenImageDialog?: () => void;
 }
 
 function EditorToolbar(
     props: EditorToolbarProps,
     forwardedRef: ForwardedRef<HTMLDivElement>
 ) {
-    const { toolbarCommands, codeMirrorRef } = props;
+    const { toolbarCommands, codeMirrorRef, onOpenImageDialog } = props;
 
     return (
         <Wrapper
@@ -52,7 +53,7 @@ function EditorToolbar(
                         aria-label={toolbarCommand.name}
                         onClick={() => {
                             if (codeMirrorRef) {
-                                toolbarCommand.execute(codeMirrorRef);
+                                toolbarCommand.execute(codeMirrorRef, onOpenImageDialog);
                             }
                         }}>
                         {toolbarCommand.icon}
