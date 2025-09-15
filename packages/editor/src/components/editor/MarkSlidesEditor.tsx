@@ -30,6 +30,7 @@ import useSyncCurrentLineNumberExtension from '@/hooks/codemirror/useSyncCurrent
 import useSyncCurrentSelectionExtension from '@/hooks/codemirror/useSyncCurrentSelectionExtension';
 import useSyncSlideInfoExtension from '@/hooks/codemirror/useSyncSlideInfoExtension';
 import useBottomPanelExtension from '@/hooks/codemirror/useBottomPanelExtension';
+import useDragDropImageExtension from '@/hooks/codemirror/useDragDropImageExtension';
 import PreviewFragment from '@/components/fragments/PreviewFragment';
 import EditorToolbar, {
     type EditorToolbarProps,
@@ -41,6 +42,7 @@ import lintExtension from '@/lib/codemirror/lintExtension';
 import defaultToolbarCommands from '@/toolbar/commands';
 import codemirrorUtil from '@/lib/codemirror/util';
 import type { SlideInfo } from '@/lib/types/common';
+import { imageUploadService } from '@/lib/services/imageUploadService';
 
 const extendedMarkdownLanguage = markdown({
     base: markdownLanguage,
@@ -112,6 +114,7 @@ interface MarkSlidesEditorProps
     isFixScrollToBottom?: boolean;
     slideInfo: SlideInfo;
     onChangeSlideInfo: (newSlideInfo: SlideInfo) => void;
+    documentId?: string; // 이미지 업로드 시 사용할 문서 ID
 }
 
 const DEFAULT_SLIDE_CONFIG: SlideConfigState = {
@@ -134,6 +137,7 @@ function MarkSlidesEditor(
         isFixScrollToBottom = false,
         slideInfo,
         onChangeSlideInfo,
+        documentId,
         placeholder,
         extensions: externalExtensions = [],
         readOnly,
@@ -193,6 +197,84 @@ function MarkSlidesEditor(
         setCurrentSelection(newSelection);
     }, []);
 
+    const handleImageDrop = useCallback(
+        async (file: File, position: number) => {
+            if (!codeMirrorRef.current || !onChange) {
+                return;
+            }
+
+            const view = codeMirrorRef.current.view;
+            if (!view) {
+                return;
+            }
+
+            try {
+                // 업로드 중 표시를 위한 임시 텍스트 삽입
+                const uploadingText = `![업로드 중... ${file.name}](uploading...)`;
+                
+                view.dispatch({
+                    changes: {
+                        from: position,
+                        to: position,
+                        insert: uploadingText,
+                    },
+                    selection: {
+                        anchor: position + uploadingText.length,
+                        head: position + uploadingText.length,
+                    },
+                });
+
+                // 이미지 업로드
+                const uploadResult = await imageUploadService.uploadImage(
+                    file,
+                    documentId
+                );
+
+                // 마크다운 이미지 문법 생성
+                const imageMarkdown = imageUploadService.generateMarkdownImage(
+                    uploadResult.url,
+                    uploadResult.originalName,
+                    uploadResult.originalName
+                );
+
+                // 현재 에디터의 내용에서 임시 텍스트를 실제 이미지 마크다운으로 교체
+                const currentContent = view.state.doc.toString();
+                const uploadingTextStart = currentContent.indexOf(uploadingText);
+                
+                if (uploadingTextStart !== -1) {
+                    view.dispatch({
+                        changes: {
+                            from: uploadingTextStart,
+                            to: uploadingTextStart + uploadingText.length,
+                            insert: imageMarkdown,
+                        },
+                    });
+                }
+            } catch (error) {
+                console.error('이미지 업로드 실패:', error);
+                
+                // 오류 발생 시 임시 텍스트 제거
+                const currentContent = view.state.doc.toString();
+                const uploadingTextForError = `![업로드 중... ${file.name}](uploading...)`;
+                const uploadingTextStart = currentContent.indexOf(uploadingTextForError);
+                
+                if (uploadingTextStart !== -1) {
+                    view.dispatch({
+                        changes: {
+                            from: uploadingTextStart,
+                            to: uploadingTextStart + uploadingTextForError.length,
+                            insert: '',
+                        },
+                    });
+                }
+                
+                // 사용자에게 오류 알림 (선택적으로 toast 등 사용)
+                alert(`이미지 업로드 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+            }
+        },
+        [documentId, onChange]
+    );
+
     const syncCurrentCursorPositionExtension =
         useSyncCurrentCursorPositionExtension(handleChangeCursorPosition);
     const syncCurrentLineNumberExtension = useSyncCurrentLineNumberExtension(
@@ -209,6 +291,9 @@ function MarkSlidesEditor(
         slideInfo.currentSlideNumber,
         slideInfo.totalSlideCount
     );
+    const dragDropImageExtension = useDragDropImageExtension({
+        onImageDrop: handleImageDrop,
+    });
 
     const extensions = useMemo(() => {
         return [
@@ -226,6 +311,7 @@ function MarkSlidesEditor(
             syncCurrentSelectionExtension,
             syncSlideInfoExtension,
             bottomPanelExtension,
+            dragDropImageExtension,
             ...externalExtensions,
         ];
     }, [
@@ -234,6 +320,7 @@ function MarkSlidesEditor(
         syncCurrentSelectionExtension,
         syncSlideInfoExtension,
         bottomPanelExtension,
+        dragDropImageExtension,
         externalExtensions,
     ]);
 
