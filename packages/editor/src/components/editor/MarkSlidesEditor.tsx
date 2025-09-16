@@ -31,6 +31,7 @@ import useSyncCurrentSelectionExtension from '@/hooks/codemirror/useSyncCurrentS
 import useSyncSlideInfoExtension from '@/hooks/codemirror/useSyncSlideInfoExtension';
 import useBottomPanelExtension from '@/hooks/codemirror/useBottomPanelExtension';
 import useDragDropImageExtension from '@/hooks/codemirror/useDragDropImageExtension';
+import useClipboardImageExtension from '@/hooks/codemirror/useClipboardImageExtension';
 import PreviewFragment from '@/components/fragments/PreviewFragment';
 import EditorToolbar, {
     type EditorToolbarProps,
@@ -44,6 +45,8 @@ import defaultToolbarCommands from '@/toolbar/commands';
 import codemirrorUtil from '@/lib/codemirror/util';
 import type { SlideInfo } from '@/lib/types/common';
 import { imageUploadService } from '@/lib/services/imageUploadService';
+import { clipboardImageService } from '@/lib/services/clipboardImageService';
+import { DEFAULT_IMAGE_SETTINGS } from '@/lib/types/imageSettings';
 
 const extendedMarkdownLanguage = markdown({
     base: markdownLanguage,
@@ -277,6 +280,93 @@ function MarkSlidesEditor(
         [documentId, onChange]
     );
 
+    const handleClipboardImagePaste = useCallback(
+        async (file: File, position: number) => {
+            if (!codeMirrorRef.current || !onChange) {
+                return;
+            }
+
+            const view = codeMirrorRef.current.view;
+            if (!view) {
+                return;
+            }
+
+            try {
+                // 업로드 중 표시를 위한 임시 텍스트 삽입
+                const uploadingText = `![붙여넣는 중... ${file.name}](uploading...)`;
+                
+                view.dispatch({
+                    changes: {
+                        from: position,
+                        to: position,
+                        insert: uploadingText,
+                    },
+                    selection: {
+                        anchor: position + uploadingText.length,
+                        head: position + uploadingText.length,
+                    },
+                });
+
+                // 클립보드 이미지 업로드
+                const result = await clipboardImageService.uploadClipboardImage(
+                    file,
+                    documentId,
+                    DEFAULT_IMAGE_SETTINGS
+                );
+
+                if (result.success && result.markdown) {
+                    // 현재 에디터의 내용에서 임시 텍스트를 실제 이미지 마크다운으로 교체
+                    const currentContent = view.state.doc.toString();
+                    const uploadingTextStart = currentContent.indexOf(uploadingText);
+                    
+                    if (uploadingTextStart !== -1) {
+                        view.dispatch({
+                            changes: {
+                                from: uploadingTextStart,
+                                to: uploadingTextStart + uploadingText.length,
+                                insert: result.markdown,
+                            },
+                        });
+                    }
+                } else {
+                    // 오류 발생 시 임시 텍스트 제거
+                    const currentContent = view.state.doc.toString();
+                    const uploadingTextStart = currentContent.indexOf(uploadingText);
+                    
+                    if (uploadingTextStart !== -1) {
+                        view.dispatch({
+                            changes: {
+                                from: uploadingTextStart,
+                                to: uploadingTextStart + uploadingText.length,
+                                insert: '',
+                            },
+                        });
+                    }
+                    
+                    console.error('클립보드 이미지 업로드 실패:', result.error);
+                }
+            } catch (error) {
+                console.error('클립보드 이미지 붙여넣기 오류:', error);
+                
+                // 오류 발생 시 임시 텍스트 제거
+                const currentContent = view.state.doc.toString();
+                const uploadingTextForError = `![붙여넣는 중... ${file.name}](uploading...)`;
+                const uploadingTextStart = currentContent.indexOf(uploadingTextForError);
+                
+                if (uploadingTextStart !== -1) {
+                    view.dispatch({
+                        changes: {
+                            from: uploadingTextStart,
+                            to: uploadingTextStart + uploadingTextForError.length,
+                            insert: '',
+                        },
+                    });
+                }
+            }
+        },
+        [documentId, onChange]
+    );
+
     const syncCurrentCursorPositionExtension =
         useSyncCurrentCursorPositionExtension(handleChangeCursorPosition);
     const syncCurrentLineNumberExtension = useSyncCurrentLineNumberExtension(
@@ -296,6 +386,9 @@ function MarkSlidesEditor(
     const dragDropImageExtension = useDragDropImageExtension({
         onImageDrop: handleImageDrop,
     });
+    const clipboardImageExtension = useClipboardImageExtension({
+        onImagePaste: handleClipboardImagePaste,
+    });
 
     const extensions = useMemo(() => {
         return [
@@ -314,6 +407,7 @@ function MarkSlidesEditor(
             syncSlideInfoExtension,
             bottomPanelExtension,
             dragDropImageExtension,
+            clipboardImageExtension,
             ...externalExtensions,
         ];
     }, [
@@ -323,6 +417,7 @@ function MarkSlidesEditor(
         syncSlideInfoExtension,
         bottomPanelExtension,
         dragDropImageExtension,
+        clipboardImageExtension,
         externalExtensions,
     ]);
 

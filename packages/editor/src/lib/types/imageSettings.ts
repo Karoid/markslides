@@ -33,7 +33,7 @@ export interface ImageSettings {
 export const DEFAULT_IMAGE_SETTINGS: ImageSettings = {
     alt: '',
     title: '',
-    width: '',
+    width: '200px',
     height: '',
     align: 'center',
     background: '',
