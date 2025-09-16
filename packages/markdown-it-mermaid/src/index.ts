@@ -2,9 +2,17 @@ import MarkdownIt from 'markdown-it';
 import Token from 'markdown-it/lib/token';
 import Renderer from 'markdown-it/lib/renderer';
 import mermaid, { type MermaidConfig } from 'mermaid';
+import { parseMermaidFlowchart, generateFlowchartHtml } from './utils/mermaidParser';
 
 const mermaidChart = (code: string) => {
     try {
+        // First try to parse as flowchart
+        if (code.trim().match(/^(flowchart|graph)\s+(TD|TB|BT|RL|LR)/i)) {
+            const parsed = parseMermaidFlowchart(code);
+            return generateFlowchartHtml(parsed, true); // Use SVG for better quality
+        }
+        
+        // Fallback to original Mermaid rendering for other diagram types
         mermaid.parse(code, { suppressErrors: true });
         return `<div class="mermaid">${code}</div>`;
     } catch ({ str, hash }: any) {
