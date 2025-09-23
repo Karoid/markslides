@@ -5,6 +5,7 @@ import type { ToolbarCommand } from '@/toolbar/types/toolbar';
 const orderedList: ToolbarCommand = {
     name: 'orderedList',
     icon: <ListOrderedIcon size={20} />,
+    tooltip: 'Ordered List',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 
@@ -14,7 +15,7 @@ const orderedList: ToolbarCommand = {
 
         const lineInfo = view.state.doc.lineAt(view.state.selection.main.from);
         let mark = '1. ';
-        const matchMark = lineInfo.text.match(/^\1\./);
+        const matchMark = lineInfo.text.match(/^1\. /);
         if (matchMark && matchMark[0]) {
             mark = '';
         }

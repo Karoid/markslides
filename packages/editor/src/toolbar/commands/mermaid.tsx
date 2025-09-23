@@ -7,6 +7,7 @@ const mermaid: ToolbarCommand = {
     // keyCommand: 'mermaid',
     // button: { 'aria-label': 'Mermaid' },
     icon: <MermaidIcon size='24px' />,
+    tooltip: 'Add Mermaid',
     execute: (codeMirrorRef: ReactCodeMirrorRef) => {
         const { editor, state, view } = codeMirrorRef;
 
@@ -27,11 +28,9 @@ const mermaid: ToolbarCommand = {
 
         const mark = '```mermaid';
         const sampleDiagram = `
-sequenceDiagram
-    participant Client
-    participant Server
-    Client->>Server: Request
-    Server->>Client: Response
+flowchart LR
+  a[hello] --> b[world]
+  c[my friend] --> d[hello]
         `.trim();
         // const matchMark = lineInfo.text.match(/^#+/);
         // if (matchMark && matchMark[0]) {

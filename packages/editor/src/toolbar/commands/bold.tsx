@@ -10,6 +10,7 @@ const bold: ToolbarCommand = {
             strokeWidth={4}
         />
     ),
+    tooltip: 'Bold',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

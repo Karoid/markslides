@@ -5,6 +5,7 @@ import type { ToolbarCommand } from '@/toolbar/types/toolbar';
 const redo: ToolbarCommand = {
     name: 'redo',
     icon: <RedoIcon size={16} />,
+    tooltip: 'Redo',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

@@ -2,15 +2,11 @@ import { InputHTMLAttributes } from 'react';
 import styled, { type CSSProperties } from 'styled-components';
 import { inlineRules } from '../../utils/rulesUtil';
 
-export const Input = styled.input.attrs<
-    InputHTMLAttributes<HTMLInputElement> & {
-        _focus?: CSSProperties;
-    }
->(({ _focus, ...others }) => ({
-    style: {
-        ...others,
-    },
-}))`
+export const Input = styled.input.withConfig({
+    shouldForwardProp: (prop) => !prop.startsWith('_'),
+})<InputHTMLAttributes<HTMLInputElement> & {
+    _focus?: CSSProperties;
+}>`
     all: unset;
     width: 100%;
     padding: 8px;

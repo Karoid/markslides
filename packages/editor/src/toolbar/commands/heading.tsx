@@ -10,6 +10,7 @@ const heading: ToolbarCommand = {
             strokeWidth={4}
         />
     ),
+    tooltip: 'Heading',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

@@ -14,6 +14,8 @@ import image from '@/toolbar/commands/image';
 import code from '@/toolbar/commands/code';
 import codeBlock from '@/toolbar/commands/codeBlock';
 import mermaid from '@/toolbar/commands/mermaid';
+import excalidraw from '@/toolbar/commands/excalidraw';
+import vega from '@/toolbar/commands/vega';
 
 const defaultToolbarCommands = [
     undo,
@@ -32,6 +34,8 @@ const defaultToolbarCommands = [
     code,
     codeBlock,
     mermaid,
+    excalidraw,
+    vega,
 ];
 
 export default defaultToolbarCommands;

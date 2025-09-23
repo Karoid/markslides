@@ -5,6 +5,7 @@ import type { ToolbarCommand } from '@/toolbar/types/toolbar';
 const todoList: ToolbarCommand = {
     name: 'todoList',
     icon: <ListChecksIcon size={16} />,
+    tooltip: 'Todo List',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

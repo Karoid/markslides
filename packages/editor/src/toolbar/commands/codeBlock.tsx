@@ -5,6 +5,7 @@ import type { ToolbarCommand } from '@/toolbar/types/toolbar';
 const codeBlock: ToolbarCommand = {
     name: 'codeBlock',
     icon: <FileCode2Icon size={16} />,
+    tooltip: 'Code Block',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

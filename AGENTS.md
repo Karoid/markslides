@@ -46,7 +46,6 @@ markslides/
 │   ├── eslint-config/        # Shared ESLint config
 │   ├── typescript-config/    # Shared TypeScript config
 │   ├── markdown-it-link/     # Custom markdown-it plugin
-│   ├── markdown-it-mermaid/  # Mermaid plugin
 │   └── markdown-it-typograms/ # Typograms plugin
 ├── docker/                   # Docker configuration
 ├── turbo.json               # Turbo monorepo config
@@ -102,7 +101,6 @@ link, image, code, codeBlock, mermaid
 **Supported Plugins**:
 
 - `markdown-it-container` - Column layouts (2-6 columns)
-- `markdown-it-mermaid` - Mermaid diagrams
 - `markdown-it-typograms` - Typograms support
 - `markdown-it-task-lists` - Task lists
 - `markdown-it-link` - Link processing

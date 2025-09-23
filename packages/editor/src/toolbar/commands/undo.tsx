@@ -5,6 +5,7 @@ import type { ToolbarCommand } from '@/toolbar/types/toolbar';
 const undo: ToolbarCommand = {
     name: 'undo',
     icon: <UndoIcon size={16} />,
+    tooltip: 'Undo',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

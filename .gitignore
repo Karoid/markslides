@@ -38,6 +38,6 @@ yarn-error.log*
 *.pem
 
 # Storybook dev cache
-storybook/.cache/
+apps/storybook/.cache/
 
 apps/web/public/uploads/

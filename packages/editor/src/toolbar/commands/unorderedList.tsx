@@ -5,6 +5,7 @@ import type { ToolbarCommand } from '@/toolbar/types/toolbar';
 const unorderedList: ToolbarCommand = {
     name: 'unorderedList',
     icon: <ListIcon size={16} />,
+    tooltip: 'Bullet List',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

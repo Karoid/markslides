@@ -11,6 +11,7 @@ const blockQuotes: ToolbarCommand = {
             fill='black'
         />
     ),
+    tooltip: 'Quote',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

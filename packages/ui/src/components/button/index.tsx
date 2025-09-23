@@ -2,13 +2,9 @@ import { ButtonHTMLAttributes, ReactNode } from 'react';
 import styled, { type CSSProperties } from 'styled-components';
 import { inlineRules } from '../../utils/rulesUtil';
 
-const StyledButton = styled.button.attrs<
-    ButtonHTMLAttributes<HTMLButtonElement> & { _hover?: CSSProperties }
->(({ _hover, ...others }) => ({
-    style: {
-        ...others,
-    },
-}))`
+const StyledButton = styled.button.withConfig({
+    shouldForwardProp: (prop) => !prop.startsWith('_'),
+})<{ _hover?: CSSProperties }>`
     all: unset;
     height: min-content;
     padding: 10px 16px;

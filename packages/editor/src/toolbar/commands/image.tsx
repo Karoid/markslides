@@ -1,13 +1,15 @@
+import { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { ImageIcon } from 'lucide-react';
-import type { ToolbarCommand } from '@/toolbar/types/toolbar';
+import type { ToolbarCommand, ToolbarContext } from '@/toolbar/types/toolbar';
 
 const image: ToolbarCommand = {
     name: 'image',
     icon: <ImageIcon size={16} />,
-    execute: (codeMirrorRef, onOpenImageDialog) => {
+    tooltip: 'Upload Image',
+    execute: (codeMirrorRef: ReactCodeMirrorRef, context?: ToolbarContext) => {
         // 이미지 다이얼로그 열기
-        if (onOpenImageDialog) {
-            onOpenImageDialog();
+        if (context?.openDialog) {
+            context.openDialog('image');
         }
     },
 };

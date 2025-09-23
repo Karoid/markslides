@@ -5,6 +5,35 @@ import Renderer from 'markdown-it/lib/renderer';
 const SHOW_LINE_NUMBERS = 'showLineNumbers';
 const regExpLineNumbers = /{([\d,-]*)}/;
 
+// Kroki가 처리하는 언어들 - 이 언어들은 fenceCodeBlockEnhancer에서 처리하지 않음
+const KROKI_LANGUAGES = [
+    'actdiag',
+    'blockdiag',
+    'bpmn',
+    'bytefield',
+    'c4plantuml',
+    'dbml',
+    'ditaa',
+    'dot',
+    'd2',
+    'erd',
+    'excalidraw',
+    'graphviz',
+    'mermaid',
+    'nomnoml',
+    'nwdiag',
+    'packetdiag',
+    'pikchr',
+    'plantuml',
+    'rackdiag',
+    'seqdiag',
+    'svgbob',
+    'umlet',
+    'vega',
+    'vegalite',
+    'wavedrom',
+];
+
 const generateFenceStyles = (digits: number): string => `
     <style>
         pre, pre[class*="language-"] {
@@ -50,6 +79,11 @@ const markdownItFenceCodeBlockEnhancer = (md: MarkdownIt) => {
         const tokenParts = token.info.split(' ').filter(Boolean);
         const langName = tokenParts[0];
         if (!langName) {
+            return original(tokens, idx, options, env, self);
+        }
+
+        // Kroki가 처리하는 언어들과 typograms는 건드리지 않고 넘김
+        if (KROKI_LANGUAGES.includes(langName) || langName === 'typograms') {
             return original(tokens, idx, options, env, self);
         }
 

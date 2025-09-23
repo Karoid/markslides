@@ -5,6 +5,7 @@ import type { ToolbarCommand } from '@/toolbar/types/toolbar';
 const italic: ToolbarCommand = {
     name: 'italic',
     icon: <ItalicIcon size={16} />,
+    tooltip: 'Italic',
     execute: (codeMirrorRef) => {
         const { state, view } = codeMirrorRef;
 

@@ -3,24 +3,7 @@
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MarkSlidesEditor, { type MarkSlidesEditorRef } from '@markslides/editor';
-import {
-    undo,
-    redo,
-    heading,
-    bold,
-    italic,
-    strike,
-    underline,
-    blockQuotes,
-    orderedList,
-    unorderedList,
-    todoList,
-    link,
-    image,
-    code,
-    codeBlock,
-    mermaid,
-} from '@markslides/editor/toolbar';
+import defaultToolbarCommands from '@markslides/editor/toolbar';
 import { Box } from '@markslides/ui/box';
 import useAppDispatch from '@/redux/hooks/useAppDispatch';
 import useAppSelector from '@/redux/hooks/useAppSelector';
@@ -107,22 +90,7 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
 
     const toolbarCommands = useMemo(() => {
         return [
-            undo,
-            redo,
-            heading,
-            bold,
-            italic,
-            strike,
-            underline,
-            blockQuotes,
-            orderedList,
-            unorderedList,
-            todoList,
-            link,
-            image,
-            code,
-            codeBlock,
-            mermaid,
+            ...defaultToolbarCommands
         ];
     }, []);
 

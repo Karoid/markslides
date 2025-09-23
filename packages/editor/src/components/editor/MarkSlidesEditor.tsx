@@ -36,7 +36,6 @@ import PreviewFragment from '@/components/fragments/PreviewFragment';
 import EditorToolbar, {
     type EditorToolbarProps,
 } from '@/components/editor/EditorToolbar';
-import ImageDialog from '@/components/dialogs/ImageDialog';
 import CurrentPageSyncButton from '@/components/editor/CurrentPageSyncButton';
 import shortcutExtension from '@/lib/codemirror/shortcutExtension';
 import dividerHighlightExtension from '@/lib/codemirror/dividerHighlightExtension';
@@ -159,7 +158,6 @@ function MarkSlidesEditor(
     const [currentCursorPosition, setCurrentCursorPosition] = useState(0);
     const [currentLineNumber, setCurrentLineNumber] = useState(0);
     const [currentSelection, setCurrentSelection] = useState('');
-    const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
     useEffect(() => {
         if (isFixScrollToBottom && value) {
@@ -459,51 +457,13 @@ function MarkSlidesEditor(
         });
     }, [isSyncCurrentPage]);
 
-    const handleOpenImageDialog = useCallback(() => {
-        setIsImageDialogOpen(true);
-    }, []);
-
-    const handleCloseImageDialog = useCallback(() => {
-        setIsImageDialogOpen(false);
-    }, []);
-
-    const handleImageSelect = useCallback(
-        (imageMarkdown: string) => {
-            if (!codeMirrorRef.current) {
-                return;
-            }
-
-            const view = codeMirrorRef.current.view;
-            if (!view) {
-                return;
-            }
-
-            // 현재 커서 위치에 이미지 마크다운 삽입
-            const cursorPosition = view.state.selection.main.from;
-
-            view.dispatch({
-                changes: {
-                    from: cursorPosition,
-                    to: cursorPosition,
-                    insert: imageMarkdown,
-                },
-                selection: {
-                    anchor: cursorPosition + imageMarkdown.length,
-                    head: cursorPosition + imageMarkdown.length,
-                },
-            });
-
-            view.focus();
-        },
-        []
-    );
 
     return (
         <Wrapper $height={height}>
             <EditorToolbar
                 toolbarCommands={toolbarCommands}
                 codeMirrorRef={codeMirrorRef.current}
-                onOpenImageDialog={handleOpenImageDialog}
+                documentId={documentId}
             />
 
             <EditorContainer>
@@ -552,12 +512,6 @@ function MarkSlidesEditor(
                 />
             </EditorContainer>
 
-            <ImageDialog
-                isOpen={isImageDialogOpen}
-                onClose={handleCloseImageDialog}
-                onImageSelect={handleImageSelect}
-                documentId={documentId}
-            />
         </Wrapper>
     );
 }
