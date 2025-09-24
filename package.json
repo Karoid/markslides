@@ -20,7 +20,7 @@
   },
   "packageManager": "npm@9.8.1",
   "workspaces": [
-    "apps/*",
+    "apps/web",
     "packages/*"
   ],
   "prisma": {

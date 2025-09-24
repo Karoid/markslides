@@ -23,21 +23,35 @@ export async function GET() {
 // POST /api/documents - Create new document
 export async function POST(request: NextRequest) {
   try {
-    const { title, content, slideConfig } = await request.json();
+    const { name, content, slideConfig, folderId } = await request.json();
 
     const document = await prisma.document.create({
       data: {
-        title: title || 'Untitled',
+        name: name || 'Untitled Document',
         content: content || '',
         slideConfig: slideConfig || {},
+        folderId: folderId || null,
       },
     });
 
-    return NextResponse.json(document);
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: document.id,
+        type: 'document',
+        name: document.name,
+        content: document.content,
+        slideConfig: document.slideConfig,
+        folderId: document.folderId,
+        createdAt: document.createdAt,
+        updatedAt: document.updatedAt,
+        lastOpenedAt: document.lastOpenedAt,
+      },
+    });
   } catch (error) {
     console.error('Failed to create document:', error);
     return NextResponse.json(
-      { error: 'Failed to create document' },
+      { success: false, message: 'Failed to create document' },
       { status: 500 }
     );
   }

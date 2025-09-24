@@ -8,7 +8,7 @@ import defaultToolbarCommands from '@markslides/editor/toolbar';
 import { Box } from '@markslides/ui/box';
 import useAppDispatch from '@/redux/hooks/useAppDispatch';
 import useAppSelector from '@/redux/hooks/useAppSelector';
-import { setContentRequested, setTitle } from '@/redux/slices/localSlice';
+import { setContentRequested, setName } from '@/redux/slices/localSlice';
 import { setSlideConfig } from '@/redux/slices/slideConfigSlice';
 import SlideShowFragment from '@/components/fragments/SlideShowFragment';
 import slideConfigUtil from '@/lib/utils/slideConfigUtil';
@@ -28,7 +28,7 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
     );
     const slideConfigState = useAppSelector((state) => state.slideConfig);
     const localContent = useAppSelector((state) => state.local.content);
-    const localTitle = useAppSelector((state) => state.local.title);
+    const localDocumentName = useAppSelector((state) => state.local.title);
     const dispatch = useAppDispatch();
 
     // Load document data
@@ -41,7 +41,7 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
                 }
                 const document = await response.json();
                 
-                dispatch(setTitle(document.title));
+                dispatch(setName(document.name));
                 dispatch(setContentRequested(document.content));
                 if (document.slideConfig) {
                     dispatch(setSlideConfig(document.slideConfig));
@@ -71,7 +71,7 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        title: localTitle,
+                        name: localDocumentName,
                         content: localContent,
                         slideConfig: slideConfigState,
                     }),
@@ -83,7 +83,7 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
 
         const timeoutId = setTimeout(saveDocument, 1000); // Debounce save
         return () => clearTimeout(timeoutId);
-    }, [documentId, localTitle, localContent, slideConfigState, isLoading]);
+    }, [documentId, localDocumentName, localContent, slideConfigState, isLoading]);
 
     const toolbarCommands = useMemo(() => {
         return [

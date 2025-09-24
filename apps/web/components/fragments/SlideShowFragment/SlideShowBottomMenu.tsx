@@ -38,7 +38,7 @@ function SlideShowBottomMenu(props: SlideShowBottomMenuProps) {
         totalPageCount,
     } = props;
 
-    const { slideId, publicationId } = useParams<{
+    const { slideId: documentId, publicationId } = useParams<{
         slideId?: string;
         publicationId?: string;
     }>();
@@ -102,7 +102,7 @@ function SlideShowBottomMenu(props: SlideShowBottomMenuProps) {
     }, []);
 
     const handleClickPresenterMode = useCallback(() => {
-        const targetUrl = `${location.origin}/slide-show`;
+        const targetUrl = `${location.host}/documents/${documentId}/show`;
 
         const slideShowUrl = new URL(targetUrl);
         slideShowUrl.searchParams.append('mode', 'presenter');
@@ -117,7 +117,7 @@ function SlideShowBottomMenu(props: SlideShowBottomMenuProps) {
                 window.innerWidth * 0.8
             },height=${window.innerHeight * 0.8}`
         );
-    }, [currentPageNo, slideId, publicationId]);
+    }, [currentPageNo, documentId, publicationId]);
 
     return (
         // <Fade in={isShow}>

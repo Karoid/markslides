@@ -660,7 +660,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 - **Slice naming**: Use descriptive names ending with `Slice`
 - **Interface naming**: Use `State` suffix for state interfaces
-- **Action naming**: Use descriptive verbs (e.g., `setTitle`, `resetLocalSlice`)
+- **Action naming**: Use descriptive verbs (e.g., `setName`, `resetLocalSlice`)
 - **Payload typing**: Use `PayloadAction<T>` for typed actions
 
 ```typescript
@@ -681,14 +681,14 @@ export const localSlice = createSlice({
   name: 'local',
   initialState,
   reducers: {
-    setTitle: (state: LocalState, action: PayloadAction<string>) => {
+    setName: (state: LocalState, action: PayloadAction<string>) => {
       state.title = action.payload;
     },
     resetLocalSlice: () => initialState,
   },
 });
 
-export const { setTitle, resetLocalSlice } = localSlice.actions;
+export const { setName, resetLocalSlice } = localSlice.actions;
 export default localSlice.reducer;
 ```
 

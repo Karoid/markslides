@@ -17,7 +17,7 @@ export const localSlice = createSlice({
     name: 'local',
     initialState,
     reducers: {
-        setTitle: (state: LocalState, action: PayloadAction<string>) => {
+        setName: (state: LocalState, action: PayloadAction<string>) => {
             state.title = action.payload;
         },
         setOutline: (state: LocalState, action: PayloadAction<string>) => {
@@ -64,7 +64,7 @@ export const localSlice = createSlice({
 });
 
 export const {
-    setTitle,
+    setName,
     setOutline,
     setOutlineStreamed,
     setContentRequested,

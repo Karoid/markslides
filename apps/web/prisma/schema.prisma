@@ -10,15 +10,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[] @relation("FolderHierarchy")
+  documents Document[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("folders")
+}
+
 model Document {
-  id          String   @id @default(cuid())
-  title       String
-  content     String   @db.Text
-  slideConfig Json     @default("{}")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  images      Image[]
-  
+  id           String   @id @default(cuid())
+  name         String
+  content      String   @db.Text
+  slideConfig  Json     @default("{\"header\": \"\", \"footer\": \"\"}")
+  folderId     String?
+  folder       Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  lastOpenedAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  images       Image[]
+
   @@map("documents")
 }
 

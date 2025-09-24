@@ -36,14 +36,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PUT /api/documents/[id] - Update document
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const { title, content, slideConfig } = await request.json();
+    const { name, content, slideConfig } = await request.json();
 
     const document = await prisma.document.update({
       where: {
         id: params.id,
       },
       data: {
-        title,
+        name,
         content,
         slideConfig,
         updatedAt: new Date(),
@@ -61,20 +61,39 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/documents/[id] - Delete document
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  try {
-    await prisma.document.delete({
-      where: {
-        id: params.id,
-      },
-    });
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const { id } = params;
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Failed to delete document:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete document' },
-      { status: 500 }
-    );
-  }
+        // 문서 존재 확인
+        const document = await prisma.document.findUnique({
+            where: { id },
+        });
+
+        if (!document) {
+            return NextResponse.json(
+                { success: false, message: 'Document not found' },
+                { status: 404 }
+            );
+        }
+
+        // 문서 삭제 (연관된 이미지는 CASCADE로 자동 삭제)
+        await prisma.document.delete({
+            where: { id },
+        });
+
+        return NextResponse.json({
+            success: true,
+            message: 'Document deleted successfully',
+        });
+    } catch (error) {
+        console.error('Failed to delete document:', error);
+        return NextResponse.json(
+            { success: false, message: 'Failed to delete document' },
+            { status: 500 }
+        );
+    }
 }

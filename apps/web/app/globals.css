@@ -43,3 +43,6 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Dashboard Styles */
+@import '../styles/dashboard.css';

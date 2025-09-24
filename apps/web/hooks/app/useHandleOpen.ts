@@ -5,7 +5,7 @@ import {
 } from 'browser-fs-access';
 import useAppDispatch from '@/redux/hooks/useAppDispatch';
 import { setSlideConfig } from '@/redux/slices/slideConfigSlice';
-import { setTitle, setContentRequested } from '@/redux/slices/localSlice';
+import { setName, setContentRequested } from '@/redux/slices/localSlice';
 import { useToast } from '@/components/ui/use-toast';
 import slideConfigUtil from '@/lib/utils/slideConfigUtil';
 
@@ -44,7 +44,7 @@ function useHandleOpen() {
                 );
 
             dispatch(setSlideConfig(loadedSlideConfigState));
-            dispatch(setTitle(title));
+            dispatch(setName(title));
             dispatch(setContentRequested(loadedMarkdownContent));
         } catch (error) {
             console.log(error);

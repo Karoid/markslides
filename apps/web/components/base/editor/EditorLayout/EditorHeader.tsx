@@ -10,25 +10,25 @@ import { PlayIcon, CloudIcon, LockKeyholeIcon, BookOpenTextIcon } from 'lucide-r
 import useAppDispatch from '@/redux/hooks/useAppDispatch';
 import useAppSelector from '@/redux/hooks/useAppSelector';
 import { setIsSlideShowMode } from '@/redux/slices/appSlice';
-import { setTitle } from '@/redux/slices/localSlice';
+import { setName } from '@/redux/slices/localSlice';
 
 function EditorHeader() {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const localTitle = useAppSelector((state) => state.local.title);
     const [isSaved, setIsSaved] = useState(true);
-    const [titleValue, setTitleValue] = useState(localTitle || '');
+    const [titleValue, setNameValue] = useState(localTitle || '');
 
     // 제목이 변경되면 저장 상태를 false로 설정
     useEffect(() => {
-        setTitleValue(localTitle || '');
+        setNameValue(localTitle || '');
     }, [localTitle]);
 
     // 제목 변경 시 저장 상태 업데이트
     useEffect(() => {
         const timer = setTimeout(() => {
             if (titleValue !== localTitle) {
-                dispatch(setTitle(titleValue));
+                dispatch(setName(titleValue));
                 setIsSaved(false);
                 // 1초 후 저장된 것으로 표시
                 setTimeout(() => setIsSaved(true), 1000);
@@ -39,7 +39,7 @@ function EditorHeader() {
     }, [titleValue, localTitle, dispatch]);
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTitleValue(e.target.value);
+        setNameValue(e.target.value);
         setIsSaved(false);
     };
 
