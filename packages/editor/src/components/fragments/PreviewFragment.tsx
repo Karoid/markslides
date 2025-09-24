@@ -53,7 +53,7 @@ const Wrapper = styled.div`
     background-color: #eeeeee;
 `;
 
-const MarpitContainer = styled.div<{ $currentSlideNum: number }>`
+const MarpitContainer = styled.div`
     height: 100%;
 
     .marpit {
@@ -65,13 +65,10 @@ const MarpitContainer = styled.div<{ $currentSlideNum: number }>`
 
         & > * {
             box-shadow: 0 0 4px 8px transparent;
-            /* border-width: 8px;
-            border-style: solid;
-            border-color: transparent;
-            transition: border-color 0.2s ease-in-out; */
             transition: box-shadow 0.2s ease-in-out;
         }
-        & > :nth-child(${({ $currentSlideNum }) => $currentSlideNum}) {
+
+        & > .current-slide-highlight {
             box-shadow: 0 0 4px 8px #d292ff;
         }
     }
@@ -81,18 +78,19 @@ type PreviewFragmentProps = {
     config: SlideConfigState;
     content: string;
     onClickSlide: (slide: HTMLElement, index: number) => void;
-    currentPageNumber?: number;
 };
 
 export type PreviewFragmentRef = {
     setCurrentPage: (pageNumber: number, isScrollIntoView?: boolean) => void;
+    highlightSlide: (pageNumber: number) => void;
+    clearHighlight: () => void;
 };
 
 function PreviewFragment(
     props: PreviewFragmentProps,
     ref: ForwardedRef<PreviewFragmentRef>
 ) {
-    const { config, content, onClickSlide, currentPageNumber = 1 } = props;
+    const { config, content, onClickSlide } = props;
 
     const { html, css, comments, refresh } = useDefaultMarpRender(
         config,
@@ -101,12 +99,39 @@ function PreviewFragment(
 
     const wrapperRef = useRef<HTMLDivElement | null>(null);
 
+    const highlightSlide = useCallback((pageNumber: number) => {
+        if (!wrapperRef.current) return;
+
+        // Clear previous highlight
+        const prevHighlighted = wrapperRef.current.querySelector('.current-slide-highlight');
+        if (prevHighlighted) {
+            prevHighlighted.classList.remove('current-slide-highlight');
+        }
+
+        // Add highlight to new slide
+        const marpitElem = wrapperRef.current.querySelector('.marpit');
+        if (marpitElem) {
+            const currentSlideElem = marpitElem.children[pageNumber - 1];
+            if (currentSlideElem) {
+                currentSlideElem.classList.add('current-slide-highlight');
+            }
+        }
+    }, []);
+
+    const clearHighlight = useCallback(() => {
+        if (!wrapperRef.current) return;
+
+        const highlighted = wrapperRef.current.querySelector('.current-slide-highlight');
+        if (highlighted) {
+            highlighted.classList.remove('current-slide-highlight');
+        }
+    }, []);
+
     useImperativeHandle(ref, () => ({
         setCurrentPage: (
             pageNumber: number,
             isScrollIntoView: boolean = true
         ) => {
-
             if (wrapperRef.current && isScrollIntoView) {
                 const marpitElem = wrapperRef.current.querySelector('.marpit');
                 if (marpitElem) {
@@ -126,6 +151,8 @@ function PreviewFragment(
                 }
             }
         },
+        highlightSlide,
+        clearHighlight,
     }));
 
     const handleClickMarpitContainer = useCallback(
@@ -153,7 +180,6 @@ function PreviewFragment(
         <Wrapper ref={wrapperRef}>
             <style>{css}</style>
             <MarpitContainer
-                $currentSlideNum={currentPageNumber}
                 dangerouslySetInnerHTML={{
                     __html: html,
                 }}

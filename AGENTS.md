@@ -104,6 +104,9 @@ link, image, code, codeBlock, mermaid
 - `markdown-it-typograms` - Typograms support
 - `markdown-it-task-lists` - Task lists
 - `markdown-it-link` - Link processing
+- `markdown-it-kroki` - Kroki diagram support (Mermaid, PlantUML, etc.)
+- `fenceCodeBlockEnhancer` - Code block line highlighting and enhancement
+- `copyFenceContent` - Copy button for code blocks
 
 ### 3. `@markslides/themes` (v0.1.6)
 
@@ -330,6 +333,108 @@ interface SlideConfigState {
   paginate: boolean;
 }
 ```
+
+#### Kroki Diagram Support
+
+MarkSlides supports various diagram types through Kroki integration:
+
+**Supported Diagram Types**:
+
+- **Mermaid**: Flowcharts, sequence diagrams, Gantt charts, etc.
+- **PlantUML**: UML diagrams, sequence diagrams, use case diagrams
+- **Graphviz**: DOT language diagrams
+- **D2**: Modern diagrams
+- **And more**: actdiag, blockdiag, bpmn, bytefield, c4plantuml, dbml, ditaa, erd, excalidraw, nomnoml, nwdiag, packetdiag, pikchr, rackdiag, seqdiag, svgbob, umlet, vega, vegalite, wavedrom
+
+**Usage Example**:
+
+````markdown
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+````
+
+````markdown
+```plantuml
+@startuml
+Alice -> Bob: Hello
+Bob -> Alice: Hi
+@enduml
+```
+````
+
+#### Code Block Enhancement Features
+
+**Line Highlighting**:
+
+MarkSlides supports highlighting specific lines in code blocks using a special syntax:
+
+```markdown
+```javascript {1,3-5}
+function example() {
+    console.log('This line is highlighted');
+    console.log('This line is not');
+    console.log('This is also highlighted');
+    console.log('And this too');
+    console.log('Normal line');
+}
+```
+
+The `{1,3-5}` syntax highlights lines 1, and 3 through 5. Single lines or ranges are supported.
+
+**Line Numbers**:
+
+Add `showLineNumbers` to display line numbers:
+
+```markdown
+```javascript showLineNumbers {2-4}
+function example() {
+    console.log('Line 1');
+    console.log('Line 2 - highlighted');
+    console.log('Line 3 - highlighted');
+    console.log('Line 4 - highlighted');
+    console.log('Line 5');
+}
+```
+
+**Technical Implementation**:
+
+- `fenceCodeBlockEnhancer` plugin processes code blocks after Kroki/Mermaid plugins
+- Compatible with all code languages except Kroki-supported diagram languages (actdiag, blockdiag, bpmn, bytefield, c4plantuml, dbml, ditaa, dot, d2, erd, excalidraw, graphviz, mermaid, nomnoml, nwdiag, packetdiag, pikchr, plantuml, rackdiag, seqdiag, svgbob, umlet, vega, vegalite, wavedrom)
+- CSS classes: `.highlighted-line`, `.line-number`
+- Theme-aware styling using CSS custom properties
+
+#### Error Handling Improvements
+
+**Marp Rendering Error Handling**:
+
+The renderer now includes robust error handling for Marp rendering failures:
+
+```typescript
+// packages/renderer/src/hooks/useDefaultMarpRender.ts
+try {
+    return appMarp
+        .getDefaultInstance()
+        .render(`---\n${config}\n---\n\n${content}`);
+} catch (error) {
+    console.error('Marp rendering error:', error);
+    return { html: null, css: null, comments: null };
+}
+```
+
+This prevents crashes when invalid markdown or configuration is provided.
+
+#### Slide Show Enhancements
+
+**Presenter Mode Improvements**:
+
+- **Scrollable Notes**: Presenter notes section now supports vertical scrolling
+- **Enhanced Navigation**: Improved keyboard and mouse navigation
+- **Visual Feedback**: Progress bar shows current slide position
 
 #### File Structure Patterns
 

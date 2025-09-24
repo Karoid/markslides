@@ -1,0 +1,424 @@
+---
+globs: *.marp
+alwaysApply: false
+---
+# Marpit 문법 가이드
+
+Marpit은 일반적인 Markdown 문서와의 호환성을 유지하면서 슬라이드 데크를 작성할 수 있도록 설계된 프레임워크입니다.
+
+## 0. 기본 테마 설정
+
+첫번째 슬라이드에 다음 내용을 추가하세요
+
+```markdown
+<style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+    @import url('https://cdn.jsdelivr.net/npm/@kfonts/d2coding@0.2.0/index.min.css');
+    * {
+        font-family: 'Pretendard', sans-serif;
+    }
+    code, pre, code *, pre * {
+      font-family: 'D2Coding', 'monospace', sans-serif;
+    }
+    pre {
+      line-height: 1.15;
+    }
+</style>
+```
+
+## 1. 슬라이드 구분
+
+Marpit에서는 수평 구분선을 사용하여 슬라이드 페이지를 구분합니다.
+
+### 구분선 문법
+
+- `---` (3개 이상의 하이픈)
+- `___` (3개 이상의 언더스코어)
+- `***` (3개 이상의 별표)
+- `- - -` (하이픈과 공백 조합)
+
+```markdown
+# 첫 번째 슬라이드
+
+내용
+
+---
+
+# 두 번째 슬라이드
+
+내용
+```
+
+> **주의**: CommonMark 사양에 따라 구분선 앞에 빈 줄이 필요할 수 있습니다.
+
+## 2. 지시어(Directives)
+
+Marpit은 슬라이드 테마, 페이지 번호, 헤더, 푸터, 스타일 등을 제어하기 위한 "지시어"라는 확장 문법을 제공합니다.
+
+### 2.1 지시어 작성 방법
+
+#### HTML 주석 형식
+
+```markdown
+<!--
+theme: default
+paginate: true
+-->
+```
+
+#### YAML 프론트매터 형식
+
+```markdown
+---
+theme: default
+paginate: true
+---
+```
+
+### 2.2 지시어 종류
+
+#### 전역 지시어 (Global Directives)
+
+- 슬라이드 전체에 적용
+- 문서 상단에 정의
+
+#### 지역 지시어 (Local Directives)
+
+- 특정 슬라이드에만 적용
+- 지시어 이름 앞에 `_`를 붙임
+
+```markdown
+<!-- _backgroundColor: aqua -->
+
+이 페이지는 배경색이 아쿠아입니다.
+
+---
+
+두 번째 페이지는 기본 배경색입니다.
+```
+
+### 2.3 주요 지시어 목록
+
+| 지시어 | 설명 | 예시 |
+|--------|------|------|
+| `theme` | 테마 설정 | `theme: default` |
+| `paginate` | 페이지 번호 표시 | `paginate: true` |
+| `backgroundColor` | 배경색 설정 | `backgroundColor: #ffffff` |
+| `backgroundImage` | 배경 이미지 설정 | `backgroundImage: url(image.jpg)` |
+| `header` | 헤더 텍스트 | `header: "회사명"` |
+| `footer` | 푸터 텍스트 | `footer: "2024년"` |
+
+> **주의**: 지시어의 값에 YAML 특수 문자가 포함될 경우, 따옴표로 감싸야 합니다.
+
+## 3. 이미지 문법
+
+Marpit은 슬라이드 작성을 돕기 위해 Markdown의 이미지 문법을 확장했습니다.
+
+### 3.1 이미지 크기 조절
+
+#### 기본 문법
+
+```markdown
+![width:200px](image.jpg)     <!-- 너비만 설정 -->
+![height:30cm](image.jpg)     <!-- 높이만 설정 -->
+![width:200px height:30cm](image.jpg)  <!-- 너비와 높이 모두 설정 -->
+```
+
+#### 단축 문법
+
+```markdown
+![w:200 h:150](image.jpg)     <!-- w = width, h = height -->
+![w:32 h:32](image.jpg)       <!-- 32x32 픽셀 -->
+```
+
+### 3.2 이미지 필터 적용
+
+CSS 필터를 이미지에 적용할 수 있습니다.
+
+```markdown
+![blur:10px](image.jpg)           <!-- 블러 필터 -->
+![brightness:1.5](image.jpg)      <!-- 밝기 조절 -->
+![contrast:200%](image.jpg)       <!-- 대비 조절 -->
+![sepia:50%](image.jpg)           <!-- 세피아 필터 -->
+```
+
+#### 여러 필터 동시 적용
+
+```markdown
+![brightness:.8 sepia:50%](image.jpg)
+```
+
+### 3.3 슬라이드 배경 이미지
+
+#### 기본 배경 이미지
+
+```markdown
+![bg](background.jpg)
+```
+
+#### 배경 이미지 크기 조절
+
+```markdown
+![bg cover](background.jpg)     <!-- 슬라이드를 채우도록 크기 조절 -->
+![bg contain](background.jpg)   <!-- 슬라이드에 맞게 크기 조절 -->
+![bg auto](background.jpg)      <!-- 원본 크기로 표시 -->
+![bg w:800 h:600](background.jpg)  <!-- 특정 크기로 설정 -->
+```
+
+#### 여러 배경 이미지
+
+```markdown
+![bg](background1.jpg)
+![bg](background2.jpg)
+```
+
+### 3.4 이미지 추가
+
+이미지 추가는 다음 서비스들을 사용하여 추가하시오:
+
+#### 3.4.1 동적 이미지 서비스
+
+- **giphy, unsplash** 등의 서비스의 MCP를 사용하여 추가
+- 실제 이미지가 필요한 경우에 사용
+
+#### 3.4.2 플레이스홀더 이미지
+
+- **dummyimage.com** 서비스를 사용하여 이미지 자리 마련
+- 설명을 위한 캡처 이미지, 추가 이미지 등은 수동으로 사람이 넣을 예정이므로 이미지 들어갈 자리를 마련하고 텍스트로 들어갈 이미지를 설명하도록 작성.
+- URL의 text 파라미터는 반드시 영어로 작성하도록 하라
+
+##### dummyimage.com 사용법
+
+```markdown
+<!-- 기본 사용법: 크기/배경색/텍스트색 -->
+![w:400 h:300](https://dummyimage.com/400x300/cccccc/000000&text=image+description)
+
+<!-- 예시: 설명용 캡처 이미지 자리 -->
+![w:600 h:400](https://dummyimage.com/600x400/4a90e2/ffffff&text=API+response+example+screen)
+
+<!-- 예시: 다이어그램 자리 -->
+![w:500 h:300](https://dummyimage.com/500x300/ff6b6b/ffffff&text=system+architecture+diagram)
+```
+
+##### 플레이스홀더 이미지 작성 가이드
+
+1. **크기 설정**: 실제 이미지와 유사한 크기로 설정
+2. **색상 선택**:
+   - 배경색: 내용에 맞는 색상 (예: API 관련은 파란색, 에러 관련은 빨간색, 데이터베이스 관련은 초록색)
+   - 텍스트색: 배경색과 대비되는 색상
+3. **텍스트 설명**:
+   - 간단하고 명확하게 이미지 내용을 설명
+   - 공백은 `+` 기호로 표시
+   - 예: "API+response+example", "error+screen+capture", "database+schema"
+
+### 3.5 이미지 사용 슬라이드 예시
+
+다음은 슬라이드 첫장의 예시이다
+
+```markdown
+<style scoped>
+  h1 {
+    font-size: 2.3rem;
+  }
+  h2 {
+    font-size: 1.6rem;
+  }
+</style>
+
+![bg right](https://images.unsplash.com/photo-1612178537253-bccd437b730e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w1NTU5NjN8MHwxfHNlYXJjaHw1fHxibGFua3xlbnwwfHx8fDE3MTU0MTk2Mjd8MA&ixlib=rb-4.0.3&q=85)
+
+# Title
+
+## Your Name
+```
+
+다음은 giphy 스티커를 사용한 예시이다
+
+```markdown
+<style scoped>
+  section > p {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+</style>
+
+# Centered **Image**
+
+![w:360px](https://media1.giphy.com/media/GPV6LaVEUPhvKlsJcv/giphy.webp?cid=d8f9e3b8rigkrnlfmuoozmawlyz9a3mpx0ecuada9yq21s71&ep=v1_stickers_trending&rid=giphy.webp&ct=s)
+```
+
+다음은 플레이스홀더 이미지를 사용한 예시이다
+
+```markdown
+<style scoped>
+  .image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .image-item {
+    text-align: center;
+  }
+</style>
+
+# API 문서화
+
+## 주요 엔드포인트
+
+<div class="image-grid">
+  <div class="image-item">
+    ![w:300 h:200](https://dummyimage.com/300x200/4a90e2/ffffff&text=API+response+example)
+    <p>API 응답 구조</p>
+  </div>
+  <div class="image-item">
+    ![w:300 h:200](https://dummyimage.com/300x200/ff6b6b/ffffff&text=error+screen+capture)
+    <p>에러 처리 예시</p>
+  </div>
+</div>
+```
+
+## 4. 테마 CSS
+
+Marpit은 슬라이드의 스타일을 정의하기 위해 테마 CSS를 사용합니다.
+
+### 4.1 테마 CSS 기본 구조
+
+```css
+/* @theme my-theme */
+
+section {
+  width: 1280px;
+  height: 720px;
+  font-size: 40px;
+  padding: 40px;
+}
+
+h1 {
+  font-size: 60px;
+  color: #09c;
+}
+
+h2 {
+  font-size: 50px;
+}
+```
+
+### 4.2 :root 선택자 사용
+
+```css
+/* @theme my-theme */
+
+:root {
+  width: 1280px;
+  height: 720px;
+  font-size: 40px;
+  padding: 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  color: #09c;
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+```
+
+### 4.3 페이지 번호 스타일링
+
+```css
+section::after {
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #fff;
+  content: 'Page ' attr(data-marpit-pagination) ' / ' attr(data-marpit-pagination-total);
+}
+```
+
+### 4.4 인라인 스타일 적용
+
+```markdown
+---
+theme: base
+---
+
+<style>
+section {
+  background: yellow;
+}
+</style>
+
+# 스타일 조정
+
+이 슬라이드는 노란색 배경을 가집니다.
+```
+
+## 5. 코드블럭 기능
+
+마크다운 기본 문법으로 코드블럭을 구현할 수 있다
+
+이때 다음과 같이 언어 설정 뒤에 showLineNumbers를 입력하면 줄 번호를 표시할 수 있고, 뒤에 붙은 {2-4,6}은 2번째부터 4번째, 6번째 줄을 강조해서 표시할 수 있다
+
+```js showLineNumbers {2-4,6}
+```
+
+왠만한 상황에서는 항상 줄 번호를 표시하도록 하라
+또한 설명시 최소한의 강조할 줄을 선정하여 표시하도록 하라. 주석을 포함하여 줄을 세야 한다.
+
+## 6. 고급 기능
+
+### 6.1 슬라이드 크기 설정
+
+```css
+section {
+  width: 960px;   /* 기본: 1280px */
+  height: 720px;  /* 기본: 720px */
+}
+```
+
+### 6.2 폰트 및 색상 설정
+
+```css
+section {
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #333;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+```
+
+### 6.3 애니메이션 효과
+
+```css
+section {
+  transition: all 0.3s ease;
+}
+
+section:hover {
+  transform: scale(1.02);
+}
+```
+
+## 7. 마이그레이션 팁
+
+### 7.1 기존 Markdown 문서 변환
+
+1. 슬라이드 구분선 추가
+2. 적절한 지시어 설정
+3. 테마 CSS 적용
+4. 이미지 문법 최적화
+
+### 7.2 성능 최적화
+
+- 불필요한 이미지 필터 제거
+- CSS 최적화
+- 인라인 SVG 사용 시 주의
+
+## 8. 참고 자료
+
+- [Marpit 공식 문서](https://marpit.marp.app/)
+- [Markdown 기본 문법](https://www.markdownguide.org/)
+- [CSS 테마 가이드](https://marpit.marp.app/theme-css)

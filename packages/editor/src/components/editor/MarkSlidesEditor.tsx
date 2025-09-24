@@ -37,6 +37,7 @@ import shortcutExtension from '@/lib/codemirror/shortcutExtension';
 import dividerHighlightExtension from '@/lib/codemirror/dividerHighlightExtension';
 import lintExtension from '@/lib/codemirror/lintExtension';
 import { getSlideInfoFromString } from '@/lib/codemirror/slideInfoExtension';
+import slideInfoExtension from '@/lib/codemirror/slideInfoExtension';
 import cursorContextExtension from '@/lib/codemirror/cursorContextExtension';
 import overwriteModeExtension from '@/lib/codemirror/overwriteModeExtension';
 import defaultToolbarCommands from '@/toolbar/commands';
@@ -177,28 +178,18 @@ function MarkSlidesEditor(
         isShowSyncCurrentPageToggle
     );
 
-    // Calculate slide info when value or cursor position changes
-    useEffect(() => {
-        if (value && onChangeSlideInfo) {
-            const newSlideInfo = getSlideInfoFromString(value, currentLineNumberRef.current);
-
-            // Only update if slide info actually changed
-            if (
-                !slideInfo ||
-                slideInfo.currentPageNumber !== newSlideInfo.currentPageNumber ||
-                slideInfo.totalPageCount !== newSlideInfo.totalPageCount ||
-                slideInfo.slideTitle !== newSlideInfo.slideTitle ||
-                slideInfo.currentPageTitle !== newSlideInfo.currentPageTitle
-            ) {
-                onChangeSlideInfo(newSlideInfo);
-            }
+    // Handle slide info changes from CodeMirror extension
+    const slideInfoExt = slideInfoExtension((newSlideInfo) => {
+        if (onChangeSlideInfo) {
+            onChangeSlideInfo(newSlideInfo);
         }
-    }, [value, onChangeSlideInfo, slideInfo]);
+    });
 
-    // Sync preview when slideInfo changes
+    // Sync preview when slideInfo changes (document change)
     useEffect(() => {
         if (slideInfo && isSyncCurrentPage && previewRef.current) {
             previewRef.current.setCurrentPage(slideInfo.currentPageNumber, true);
+            previewRef.current.highlightSlide(slideInfo.currentPageNumber);
         }
     }, [slideInfo?.currentPageNumber, isSyncCurrentPage]);
 
@@ -412,11 +403,40 @@ function MarkSlidesEditor(
         setCurrentSelection(newSelection);
     }, []);
 
-    const cursorContextExt = cursorContextExtension((context) => {
-        setCurrentCursorPosition(context.cursorPosition);
-        currentLineNumberRef.current = context.lineNumber;
-        setCurrentSelection(context.selectionStr);
-    });
+    const cursorContextExt = cursorContextExtension(
+        (context) => {
+            setCurrentCursorPosition(context.cursorPosition);
+            currentLineNumberRef.current = context.lineNumber;
+            setCurrentSelection(context.selectionStr);
+        },
+        (slideInfo) => {
+            // Cursor sync: directly scroll and highlight without triggering re-render
+            if (previewRef.current && isSyncCurrentPage) {
+                // Scroll to the slide
+                if (previewContainerRef.current) {
+                    const marpitElem = previewContainerRef.current.querySelector('.marpit');
+                    if (marpitElem) {
+                        const currentSlideElem = marpitElem.children[slideInfo.currentPageNumber - 1];
+                        if (currentSlideElem) {
+                            currentSlideElem.scrollIntoView({
+                                // NOTE: Chrome 140 ScrollIntoView container option
+                                // https://developer.chrome.com/release-notes/140#scrollintoview_container_option
+                                // @ts-ignore
+                                container: 'nearest',
+                                block: 'center',
+                                inline: 'center',
+                                behavior: 'smooth',
+                            });
+                        }
+                    }
+                }
+
+                // Clear previous highlight and highlight new slide
+                previewRef.current.clearHighlight();
+                previewRef.current.highlightSlide(slideInfo.currentPageNumber);
+            }
+        }
+    );
 
     const bottomPanelExtension = useBottomPanelExtension();
     const dragDropImageExtension = useDragDropImageExtension({
@@ -439,6 +459,7 @@ function MarkSlidesEditor(
             extendedMarkdownLanguage,
             EditorView.lineWrapping,
             cursorContextExt,
+            slideInfoExt,
             bottomPanelExtension,
             dragDropImageExtension,
             clipboardImageExtension,
@@ -457,6 +478,8 @@ function MarkSlidesEditor(
         clipboardImageExtension,
         externalExtensions,
         overwriteModeExtension,
+        slideInfoExt,
+        cursorContextExt,
     ]);
 
     const handleClickSlide = useCallback(
@@ -556,7 +579,6 @@ function MarkSlidesEditor(
                         config={config}
                         content={value ?? ''}
                         onClickSlide={handleClickSlide}
-                        currentPageNumber={slideInfo?.currentPageNumber}
                     />
                 </PreviewContainer>
 
