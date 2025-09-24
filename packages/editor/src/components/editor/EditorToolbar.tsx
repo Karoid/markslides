@@ -1,6 +1,6 @@
 import { ForwardedRef, forwardRef, memo, useState, useCallback } from 'react';
 import styled from 'styled-components';
-import { ReactCodeMirrorRef } from '@uiw/react-codemirror';
+import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import appConst from '@/lib/constants/appConst';
 import DialogManager from './DialogManager';
 import type { ToolbarCommand, ToolbarContext } from '@/toolbar';
@@ -162,4 +162,6 @@ ${selectedText.length > 0 ? selectedText : chartSpec}
     );
 }
 
-export default memo(forwardRef(EditorToolbar));
+export default memo(forwardRef(EditorToolbar), (prevProps, nextProps) => {
+    return prevProps.toolbarCommands === nextProps.toolbarCommands;
+});

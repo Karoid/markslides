@@ -1,4 +1,5 @@
-/*
+// Auto-generated from default.css
+const defaultTheme = `/*
  * Marp default theme.
  *
  * @theme default
@@ -139,7 +140,7 @@ section h4:hover .anchor .octicon-link:before,
 section h5:hover .anchor .octicon-link:before,
 section h6:hover .anchor .octicon-link:before {
     background-color: currentColor;
-    content: \" \";
+    content: \\" \\";
     display: inline-block;
     height: 16px;
     -webkit-mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 0 0 1.06 1.06l1.25-1.25a2 2 0 1 1 2.83 2.83l-2.5 2.5a2 2 0 0 1-2.83 0 .75.75 0 0 0-1.06 1.06 3.5 3.5 0 0 0 4.95 0l2.5-2.5a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 0 1 0-2.83l2.5-2.5a2 2 0 0 1 2.83 0 .75.75 0 0 0 1.06-1.06 3.5 3.5 0 0 0-4.95 0l-2.5 2.5a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25a.75.75 0 0 0-1.06-1.06l-1.25 1.25a2 2 0 0 1-2.83 0z"/></svg>');
@@ -302,7 +303,7 @@ section ::placeholder {
 
 section hr::after,
 section hr::before {
-    content: \"\";
+    content: \\"\\";
     display: table;
 }
 
@@ -506,7 +507,7 @@ section input::-webkit-outer-spin-button {
 
 section::after,
 section::before {
-    content: \"\";
+    content: \\"\\";
     display: table;
 }
 
@@ -654,7 +655,7 @@ section ol[type='I'] {
 }
 
 section div > ol:not([type]),
-section ol[type=\"1\"] {
+section ol[type=\\"1\\"] {
     list-style-type: decimal;
 }
 
@@ -941,7 +942,7 @@ section .footnotes li:target::before {
     border: 2px solid var(--color-accent-emphasis);
     border-radius: 6px;
     bottom: -8px;
-    content: \"\";
+    content: \\"\\";
     left: -24px;
     pointer-events: none;
     position: absolute;
@@ -1417,3 +1418,6 @@ pre.mermaid {
     text-align: left;
     color: red;
 }
+`;
+
+export default defaultTheme;

@@ -25,10 +25,6 @@ import { langs } from '@uiw/codemirror-extensions-langs';
 import { color as colorPickerExtension } from '@uiw/codemirror-extensions-color';
 import { githubLight } from '@uiw/codemirror-themes-all';
 import type { SlideConfigState } from '@markslides/renderer';
-import useSyncCurrentCursorPositionExtension from '@/hooks/codemirror/useSyncCurrentCursorPositionExtension';
-import useSyncCurrentLineNumberExtension from '@/hooks/codemirror/useSyncCurrentLineNumberExtension';
-import useSyncCurrentSelectionExtension from '@/hooks/codemirror/useSyncCurrentSelectionExtension';
-import useSyncSlideInfoExtension from '@/hooks/codemirror/useSyncSlideInfoExtension';
 import useBottomPanelExtension from '@/hooks/codemirror/useBottomPanelExtension';
 import useDragDropImageExtension from '@/hooks/codemirror/useDragDropImageExtension';
 import useClipboardImageExtension from '@/hooks/codemirror/useClipboardImageExtension';
@@ -40,6 +36,9 @@ import CurrentPageSyncButton from '@/components/editor/CurrentPageSyncButton';
 import shortcutExtension from '@/lib/codemirror/shortcutExtension';
 import dividerHighlightExtension from '@/lib/codemirror/dividerHighlightExtension';
 import lintExtension from '@/lib/codemirror/lintExtension';
+import slideInfoExtension from '@/lib/codemirror/slideInfoExtension';
+import cursorContextExtension from '@/lib/codemirror/cursorContextExtension';
+import overwriteModeExtension from '@/lib/codemirror/overwriteModeExtension';
 import defaultToolbarCommands from '@/toolbar/commands';
 import codemirrorUtil from '@/lib/codemirror/util';
 import type { SlideInfo } from '@/lib/types/common';
@@ -104,6 +103,21 @@ const styleTheme = EditorView.baseTheme({
     },
 });
 
+const overwriteCursorTheme = EditorView.baseTheme({
+    '&.cm-editor .cm-cursor': {
+        borderLeft: 'none',
+        borderBottom: '2px solid',
+        width: '0.6em',
+        marginLeft: '0',
+    },
+    '&.cm-editor.cm-focused .cm-cursor': {
+        borderLeft: 'none',
+        borderBottom: '2px solid',
+        width: '0.6em',
+        marginLeft: '0',
+    },
+});
+
 export interface MarkSlidesEditorRef extends ReactCodeMirrorRef {}
 
 interface MarkSlidesEditorProps
@@ -114,6 +128,7 @@ interface MarkSlidesEditorProps
         Partial<Pick<EditorToolbarProps, 'toolbarCommands'>> {
     height?: number | string;
     config?: SlideConfigState;
+    isShowSyncCurrentPageToggle?: boolean;
     isFixScrollToBottom?: boolean;
     slideInfo: SlideInfo;
     onChangeSlideInfo: (newSlideInfo: SlideInfo) => void;
@@ -137,8 +152,9 @@ function MarkSlidesEditor(
         toolbarCommands = defaultToolbarCommands,
         height = '100vh',
         config = DEFAULT_SLIDE_CONFIG,
+        isShowSyncCurrentPageToggle = true,
         isFixScrollToBottom = false,
-        slideInfo,
+        isOverwriteMode = false,
         onChangeSlideInfo,
         documentId,
         placeholder,
@@ -153,11 +169,11 @@ function MarkSlidesEditor(
     // const editorStateRef = useRef<EditorState | null>(null);
 
     const previewContainerRef = useRef<HTMLDivElement>(null);
+    const previewRef = useRef<PreviewFragmentRef>(null);
 
-    const [isSyncCurrentPage, setIsSyncCurrentPage] = useState(true);
-    const [currentCursorPosition, setCurrentCursorPosition] = useState(0);
-    const [currentLineNumber, setCurrentLineNumber] = useState(0);
-    const [currentSelection, setCurrentSelection] = useState('');
+    const [isSyncCurrentPage, setIsSyncCurrentPage] = useState(
+        isShowSyncCurrentPageToggle
+    );
 
     useEffect(() => {
         if (isFixScrollToBottom && value) {
@@ -387,11 +403,15 @@ function MarkSlidesEditor(
     const clipboardImageExtension = useClipboardImageExtension({
         onImagePaste: handleClipboardImagePaste,
     });
+=======
+    const bottomPanelExtension = useBottomPanelExtension();
+>>>>>>> upstream/main
 
     const extensions = useMemo(() => {
-        return [
+        let _extensions = [
             historyExtension(),
             styleTheme,
+            ...(isOverwriteMode ? [overwriteCursorTheme] : []),
             shortcutExtension,
             colorPickerExtension,
             dividerHighlightExtension,
@@ -399,57 +419,78 @@ function MarkSlidesEditor(
             // lintGutter(),
             extendedMarkdownLanguage,
             EditorView.lineWrapping,
-            syncCurrentCursorPositionExtension,
-            syncCurrentLineNumberExtension,
-            syncCurrentSelectionExtension,
-            syncSlideInfoExtension,
+            // cursorContextExtension((cursorContext) => {
+            //     const { cursorPosition, lineNumber, selectionStr } =
+            //         cursorContext;
+
+            //     // NOTE: Add something to use these values
+            // }),
+            slideInfoExtension((slideInfo) => {
+                if (previewRef.current) {
+                    previewRef.current.setCurrentPage(
+                        slideInfo.currentPageNumber,
+                        isSyncCurrentPage
+                    );
+                }
+
+                if (!!onChangeSlideInfo) {
+                    onChangeSlideInfo(slideInfo);
+                }
+            }),
             bottomPanelExtension,
             dragDropImageExtension,
             clipboardImageExtension,
             ...externalExtensions,
         ];
+
+        if (isOverwriteMode) {
+            _extensions.push(overwriteModeExtension);
+        }
+
+        return _extensions;
     }, [
-        syncCurrentCursorPositionExtension,
-        syncCurrentLineNumberExtension,
-        syncCurrentSelectionExtension,
-        syncSlideInfoExtension,
+        isOverwriteMode,
         bottomPanelExtension,
         dragDropImageExtension,
         clipboardImageExtension,
         externalExtensions,
+        overwriteModeExtension,
     ]);
 
-    const handleClickSlide = useCallback((slide: Element, index: number) => {
-        if (!codeMirrorRef.current) {
-            return;
-        }
+    const handleClickSlide = useCallback(
+        (slide: Element, index: number) => {
+            if (!codeMirrorRef.current) {
+                return;
+            }
 
-        const { view } = codeMirrorRef.current;
-        if (!view) {
-            return;
-        }
-        // NOTE: Do not use codeMirrorRef.current.state, because it doesn't updated in correctly
-        const state = view.state;
+            const { view } = codeMirrorRef.current;
+            if (!view) {
+                return;
+            }
+            // NOTE: Do not use codeMirrorRef.current.state, because it doesn't updated in correctly
+            const state = view.state;
 
-        const line = codemirrorUtil.getLineFromSlideIndex(state, index);
+            const line = codemirrorUtil.getLineFromSlideIndex(state, index);
 
-        view.dispatch({
-            selection: { head: line.from, anchor: line.from },
-            // scrollIntoView: true,
-        });
-        view.focus();
-
-        const lineBlockAt = view.lineBlockAt(line.from);
-        if (lineBlockAt) {
-            const scroller = view.scrollDOM.getBoundingClientRect();
-            const middle = lineBlockAt.top - scroller.height / 2;
-
-            view.scrollDOM.scrollTo({
-                top: middle,
-                behavior: 'smooth',
+            view.dispatch({
+                selection: { head: line.from, anchor: line.from },
+                // scrollIntoView: true,
             });
-        }
-    }, []);
+            view.focus();
+
+            const lineBlockAt = view.lineBlockAt(line.from);
+            if (lineBlockAt) {
+                const scroller = view.scrollDOM.getBoundingClientRect();
+                const middle = lineBlockAt.top - scroller.height / 2;
+
+                view.scrollDOM.scrollTo({
+                    top: middle,
+                    behavior: 'smooth',
+                });
+            }
+        },
+        [codeMirrorRef.current]
+    );
 
     const handleClickSyncCurrentPage = useCallback(() => {
         setIsSyncCurrentPage((prevIsSyncCurrentPage) => {
@@ -457,6 +498,18 @@ function MarkSlidesEditor(
         });
     }, [isSyncCurrentPage]);
 
+    const reactCodeMirrorCallbackRef = useCallback(
+        (_ref: ReactCodeMirrorRef | null) => {
+            if (ref && typeof ref === 'function') {
+                ref(_ref);
+            } else if (ref && typeof ref === 'object') {
+                ref.current = _ref;
+            }
+
+            codeMirrorRef.current = _ref as ReactCodeMirrorRef;
+        },
+        [ref]
+    );
 
     return (
         <Wrapper $height={height}>
@@ -468,15 +521,7 @@ function MarkSlidesEditor(
 
             <EditorContainer>
                 <ReactCodeMirror
-                    ref={(_ref) => {
-                        if (ref && typeof ref === 'function') {
-                            ref(_ref);
-                        } else if (ref && typeof ref === 'object') {
-                            ref.current = _ref;
-                        }
-
-                        codeMirrorRef.current = _ref as ReactCodeMirrorRef;
-                    }}
+                    ref={reactCodeMirrorCallbackRef}
                     height='100%'
                     style={{
                         flex: '1',
@@ -491,25 +536,33 @@ function MarkSlidesEditor(
                     readOnly={readOnly}
                     value={value}
                     onChange={onChange}
+                    // TODO: Use this to update value
+                    // onUpdate={(update) => {
+                    //     // console.log('onUpdate', update);
+
+                    //     if (onChange) {
+                    //         onChange(update.state.doc.toString(), update);
+                    //     }
+                    // }}
                 />
 
                 <VerticalDivider />
 
                 <PreviewContainer ref={previewContainerRef}>
                     <PreviewFragment
+                        ref={previewRef}
                         config={config}
                         content={value ?? ''}
-                        isSyncCurrentPage={isSyncCurrentPage}
-                        currentLineNumber={currentLineNumber}
-                        currentSlideNumber={slideInfo.currentSlideNumber}
                         onClickSlide={handleClickSlide}
                     />
                 </PreviewContainer>
 
-                <CurrentPageSyncButton
-                    isSyncCurrentPage={isSyncCurrentPage}
-                    onToggle={handleClickSyncCurrentPage}
-                />
+                {isShowSyncCurrentPageToggle && (
+                    <CurrentPageSyncButton
+                        isSyncCurrentPage={isSyncCurrentPage}
+                        onToggle={handleClickSyncCurrentPage}
+                    />
+                )}
             </EditorContainer>
 
         </Wrapper>

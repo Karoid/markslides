@@ -27,7 +27,6 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
         (state) => state.app.isSlideShowMode
     );
     const slideConfigState = useAppSelector((state) => state.slideConfig);
-    const slideInfo = useAppSelector((state) => state.editor.slideInfo);
     const localContent = useAppSelector((state) => state.local.content);
     const localTitle = useAppSelector((state) => state.local.title);
     const dispatch = useAppDispatch();
@@ -99,6 +98,8 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
             slideConfigState
         );
     }, [slideConfigState]);
+
+    const slideInfo = useAppSelector((state) => state.editor.slideInfo);
 
     if (isLoading) {
         return (
