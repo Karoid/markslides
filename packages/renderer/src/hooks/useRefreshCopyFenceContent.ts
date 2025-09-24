@@ -1,7 +1,14 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 
 function useRefreshCopyFenceContent() {
+    const cleanupRef = useRef<(() => void) | null>(null);
+
     return useCallback(() => {
+        // Clean up previous event listeners
+        if (cleanupRef.current) {
+            cleanupRef.current();
+        }
+
         const copyFenceContentButtonElems = Array.from(
             document.querySelectorAll('button.copy-fence-content')
         ) as HTMLButtonElement[];
@@ -20,13 +27,9 @@ function useRefreshCopyFenceContent() {
                 await navigator.clipboard.writeText(content);
 
                 elem.classList.add('active');
-                const timeoutId = setTimeout(() => {
+                setTimeout(() => {
                     elem.classList.remove('active');
                 }, 2000);
-
-                return () => {
-                    clearTimeout(timeoutId);
-                };
             } catch (err) {
                 console.error('Failed to copy:', err);
             }
@@ -36,11 +39,13 @@ function useRefreshCopyFenceContent() {
             elem.addEventListener('click', handleClickCopyCodeButton);
         });
 
-        return () => {
+        cleanupRef.current = () => {
             copyFenceContentButtonElems.forEach((elem) => {
                 elem.removeEventListener('click', handleClickCopyCodeButton);
             });
         };
+
+        return cleanupRef.current;
     }, []);
 }
 

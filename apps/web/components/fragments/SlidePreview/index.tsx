@@ -4,14 +4,16 @@ import { useMemo } from 'react';
 import { useDefaultMarpRender } from '@markslides/renderer';
 import { Box } from '@markslides/ui/box';
 
+import type { SlideConfigState } from '@markslides/renderer';
+
 interface SlidePreviewProps {
     content: string;
-    slideConfig?: any;
+    slideConfig?: SlideConfigState;
     height?: string | number;
     width?: string | number;
 }
 
-function SlidePreview({ content, slideConfig = {}, height = '200px', width = '100%' }: SlidePreviewProps): JSX.Element {
+function SlidePreview({ content, slideConfig, height = '200px', width = '100%' }: SlidePreviewProps): JSX.Element {
     // 첫 번째 슬라이드만 추출
     const firstSlideContent = useMemo(() => {
         // 마크다운에서 첫 번째 슬라이드 구분자 찾기

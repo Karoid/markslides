@@ -36,7 +36,7 @@ function useDefaultMarpRender(
 
     useEffect(() => {
         refresh();
-    });
+    }, [refresh]);
 
     return { html, css, comments, refresh };
 }

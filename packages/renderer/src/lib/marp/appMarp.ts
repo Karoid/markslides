@@ -58,7 +58,7 @@ const appMarp = (function () {
         // Set themes
         if (themes.length > 0) {
             marp.themeSet.default = marp.themeSet.add(themes[0]!.css);
-            themes.forEach((theme) => {
+            themes.forEach((theme: { name: string; css: string }) => {
                 marp.themeSet.add(theme.css);
             });
         }

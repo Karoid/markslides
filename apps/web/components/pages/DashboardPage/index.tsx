@@ -8,11 +8,13 @@ import { Text } from '@markslides/ui/text';
 import { Plus, FileText, Calendar, Edit, Trash2 } from 'lucide-react';
 import SlidePreview from '@/components/fragments/SlidePreview';
 
+import type { SlideConfigState } from '@markslides/renderer';
+
 interface Document {
   id: string;
   title: string;
   content: string;
-  slideConfig: any;
+  slideConfig: SlideConfigState;
   createdAt: string;
   updatedAt: string;
 }

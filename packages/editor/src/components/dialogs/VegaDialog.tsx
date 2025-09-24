@@ -102,18 +102,29 @@ const PreviewImage = styled.img`
     border: 1px solid #e0e0e0;
 `;
 
+interface VegaSpec {
+    [key: string]: any;
+}
+
+interface VegaExample {
+    name: string;
+    description: string;
+    thumbnail: string;
+    spec: VegaSpec;
+}
+
 interface VegaDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelectExample: (spec: any) => void;
+    onSelectExample: (spec: VegaSpec) => void;
 }
 
 function VegaDialog({ isOpen, onClose, onSelectExample }: VegaDialogProps) {
-    const [selectedExample, setSelectedExample] = useState<any>(null);
+    const [selectedExample, setSelectedExample] = useState<VegaExample | null>(null);
 
     if (!isOpen) return null;
 
-    const handleSelectExample = (example: any) => {
+    const handleSelectExample = (example: VegaExample) => {
         setSelectedExample(example);
         onSelectExample(example.spec);
         onClose();

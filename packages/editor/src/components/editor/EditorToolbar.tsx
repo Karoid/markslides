@@ -85,7 +85,7 @@ function EditorToolbar(
     );
 
     const handleVegaSelect = useCallback(
-        (spec: any) => {
+        (spec: Record<string, any>) => {
             if (!codeMirrorRef) {
                 return;
             }

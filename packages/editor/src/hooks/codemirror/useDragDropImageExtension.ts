@@ -41,12 +41,12 @@ export default function useDragDropImageExtension(
             }
         },
 
-        async drop(event, view) {
+        drop(event, view) {
             event.preventDefault();
             view.dom.classList.remove('cm-drag-over');
 
             const files = Array.from(event.dataTransfer?.files || []);
-            const imageFiles = files.filter(file => 
+            const imageFiles = files.filter(file =>
                 allowedTypes.includes(file.type)
             );
 
@@ -72,7 +72,7 @@ export default function useDragDropImageExtension(
                 }
 
                 try {
-                    await onImageDrop(file, pos);
+                    onImageDrop(file, pos);
                 } catch (error) {
                     console.error('이미지 업로드 오류:', error);
                 }

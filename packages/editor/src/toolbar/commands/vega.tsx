@@ -3,7 +3,11 @@ import { VegaIcon } from '@/components/icons';
 import type { ToolbarCommand, ToolbarContext } from '@/toolbar/types/toolbar';
 
 // Vega 예시들
-const vegaExamples: { name: string; description: string; thumbnail: string; spec: any }[] = [
+interface VegaSpec {
+    [key: string]: any;
+}
+
+const vegaExamples: { name: string; description: string; thumbnail: string; spec: VegaSpec }[] = [
     {
         name: 'Bar Chart',
         description: 'Basic bar chart visualization',

@@ -3,7 +3,6 @@
 import {
     useImperativeHandle,
     useRef,
-    useState,
     useCallback,
     memo,
     forwardRef,
@@ -82,6 +81,7 @@ type PreviewFragmentProps = {
     config: SlideConfigState;
     content: string;
     onClickSlide: (slide: HTMLElement, index: number) => void;
+    currentPageNumber?: number;
 };
 
 export type PreviewFragmentRef = {
@@ -92,7 +92,7 @@ function PreviewFragment(
     props: PreviewFragmentProps,
     ref: ForwardedRef<PreviewFragmentRef>
 ) {
-    const { config, content, onClickSlide } = props;
+    const { config, content, onClickSlide, currentPageNumber = 1 } = props;
 
     const { html, css, comments, refresh } = useDefaultMarpRender(
         config,
@@ -101,14 +101,11 @@ function PreviewFragment(
 
     const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-    const [_currentPageNumber, _setCurrentPageNumber] = useState(1);
-
     useImperativeHandle(ref, () => ({
         setCurrentPage: (
             pageNumber: number,
             isScrollIntoView: boolean = true
         ) => {
-            _setCurrentPageNumber(pageNumber);
 
             if (wrapperRef.current && isScrollIntoView) {
                 const marpitElem = wrapperRef.current.querySelector('.marpit');
@@ -156,7 +153,7 @@ function PreviewFragment(
         <Wrapper ref={wrapperRef}>
             <style>{css}</style>
             <MarpitContainer
-                $currentSlideNum={_currentPageNumber}
+                $currentSlideNum={currentPageNumber}
                 dangerouslySetInnerHTML={{
                     __html: html,
                 }}

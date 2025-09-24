@@ -3,12 +3,12 @@
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MarkSlidesEditor, { type MarkSlidesEditorRef } from '@markslides/editor';
+import type { SlideInfo } from '@markslides/editor';
 import defaultToolbarCommands from '@markslides/editor/toolbar';
 import { Box } from '@markslides/ui/box';
 import useAppDispatch from '@/redux/hooks/useAppDispatch';
 import useAppSelector from '@/redux/hooks/useAppSelector';
 import { setContentRequested, setTitle } from '@/redux/slices/localSlice';
-import { setSlideInfo } from '@/redux/slices/editorSlice';
 import { setSlideConfig } from '@/redux/slices/slideConfigSlice';
 import SlideShowFragment from '@/components/fragments/SlideShowFragment';
 import slideConfigUtil from '@/lib/utils/slideConfigUtil';
@@ -30,8 +30,6 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
     const localContent = useAppSelector((state) => state.local.content);
     const localTitle = useAppSelector((state) => state.local.title);
     const dispatch = useAppDispatch();
-
-    const markdownContent = useAppSelector((state) => state.local.content);
 
     // Load document data
     useEffect(() => {
@@ -99,7 +97,12 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
         );
     }, [slideConfigState]);
 
-    const slideInfo = useAppSelector((state) => state.editor.slideInfo);
+    const [slideInfo, setSlideInfo] = useState<SlideInfo>({
+        slideTitle: undefined,
+        currentPageTitle: undefined,
+        currentPageNumber: 1,
+        totalPageCount: 1
+    });
 
     if (isLoading) {
         return (
@@ -122,10 +125,10 @@ function EditorPage({ documentId }: EditorPageProps): JSX.Element {
                     isFixScrollToBottom={false}
                     slideInfo={slideInfo}
                     onChangeSlideInfo={(newSlideInfo) => {
-                        dispatch(setSlideInfo(newSlideInfo));
+                        setSlideInfo(newSlideInfo);
                     }}
                     placeholder='# Hi, MarkSlides!'
-                    value={markdownContent}
+                    value={localContent}
                     onChange={(newValue) => {
                         dispatch(setContentRequested(newValue));
                     }}

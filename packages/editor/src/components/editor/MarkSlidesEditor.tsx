@@ -28,7 +28,7 @@ import type { SlideConfigState } from '@markslides/renderer';
 import useBottomPanelExtension from '@/hooks/codemirror/useBottomPanelExtension';
 import useDragDropImageExtension from '@/hooks/codemirror/useDragDropImageExtension';
 import useClipboardImageExtension from '@/hooks/codemirror/useClipboardImageExtension';
-import PreviewFragment from '@/components/fragments/PreviewFragment';
+import PreviewFragment, { type PreviewFragmentRef } from '@/components/fragments/PreviewFragment';
 import EditorToolbar, {
     type EditorToolbarProps,
 } from '@/components/editor/EditorToolbar';
@@ -36,7 +36,7 @@ import CurrentPageSyncButton from '@/components/editor/CurrentPageSyncButton';
 import shortcutExtension from '@/lib/codemirror/shortcutExtension';
 import dividerHighlightExtension from '@/lib/codemirror/dividerHighlightExtension';
 import lintExtension from '@/lib/codemirror/lintExtension';
-import slideInfoExtension from '@/lib/codemirror/slideInfoExtension';
+import { getSlideInfoFromString } from '@/lib/codemirror/slideInfoExtension';
 import cursorContextExtension from '@/lib/codemirror/cursorContextExtension';
 import overwriteModeExtension from '@/lib/codemirror/overwriteModeExtension';
 import defaultToolbarCommands from '@/toolbar/commands';
@@ -130,6 +130,7 @@ interface MarkSlidesEditorProps
     config?: SlideConfigState;
     isShowSyncCurrentPageToggle?: boolean;
     isFixScrollToBottom?: boolean;
+    isOverwriteMode?: boolean;
     slideInfo: SlideInfo;
     onChangeSlideInfo: (newSlideInfo: SlideInfo) => void;
     documentId?: string; // 이미지 업로드 시 사용할 문서 ID
@@ -155,6 +156,7 @@ function MarkSlidesEditor(
         isShowSyncCurrentPageToggle = true,
         isFixScrollToBottom = false,
         isOverwriteMode = false,
+        slideInfo,
         onChangeSlideInfo,
         documentId,
         placeholder,
@@ -174,6 +176,31 @@ function MarkSlidesEditor(
     const [isSyncCurrentPage, setIsSyncCurrentPage] = useState(
         isShowSyncCurrentPageToggle
     );
+
+    // Calculate slide info when value or cursor position changes
+    useEffect(() => {
+        if (value && onChangeSlideInfo) {
+            const newSlideInfo = getSlideInfoFromString(value, currentLineNumberRef.current);
+
+            // Only update if slide info actually changed
+            if (
+                !slideInfo ||
+                slideInfo.currentPageNumber !== newSlideInfo.currentPageNumber ||
+                slideInfo.totalPageCount !== newSlideInfo.totalPageCount ||
+                slideInfo.slideTitle !== newSlideInfo.slideTitle ||
+                slideInfo.currentPageTitle !== newSlideInfo.currentPageTitle
+            ) {
+                onChangeSlideInfo(newSlideInfo);
+            }
+        }
+    }, [value, onChangeSlideInfo, slideInfo]);
+
+    // Sync preview when slideInfo changes
+    useEffect(() => {
+        if (slideInfo && isSyncCurrentPage && previewRef.current) {
+            previewRef.current.setCurrentPage(slideInfo.currentPageNumber, true);
+        }
+    }, [slideInfo?.currentPageNumber, isSyncCurrentPage]);
 
     useEffect(() => {
         if (isFixScrollToBottom && value) {
@@ -200,21 +227,6 @@ function MarkSlidesEditor(
             }
         }
     }, [value]);
-
-    const handleChangeCursorPosition = useCallback(
-        (newCursorPosition: number) => {
-            setCurrentCursorPosition(newCursorPosition);
-        },
-        []
-    );
-
-    const handleChangeLineNumber = useCallback((newLineNumber: number) => {
-        setCurrentLineNumber(newLineNumber);
-    }, []);
-
-    const handleChangeSelectionStr = useCallback((newSelection: string) => {
-        setCurrentSelection(newSelection);
-    }, []);
 
     const handleImageDrop = useCallback(
         async (file: File, position: number) => {
@@ -381,31 +393,38 @@ function MarkSlidesEditor(
         [documentId, onChange]
     );
 
-    const syncCurrentCursorPositionExtension =
-        useSyncCurrentCursorPositionExtension(handleChangeCursorPosition);
-    const syncCurrentLineNumberExtension = useSyncCurrentLineNumberExtension(
-        handleChangeLineNumber
+    const [currentCursorPosition, setCurrentCursorPosition] = useState(0);
+    const [currentSelection, setCurrentSelection] = useState('');
+    const currentLineNumberRef = useRef(1);
+
+    const handleChangeCursorPosition = useCallback(
+        (newCursorPosition: number) => {
+            setCurrentCursorPosition(newCursorPosition);
+        },
+        []
     );
-    const syncCurrentSelectionExtension = useSyncCurrentSelectionExtension(
-        handleChangeSelectionStr
-    );
-    const syncSlideInfoExtension = useSyncSlideInfoExtension(
-        slideInfo,
-        onChangeSlideInfo
-    );
-    const bottomPanelExtension = useBottomPanelExtension(
-        slideInfo.currentSlideNumber,
-        slideInfo.totalSlideCount
-    );
+
+    const handleChangeLineNumber = useCallback((newLineNumber: number) => {
+        currentLineNumberRef.current = newLineNumber;
+    }, []);
+
+    const handleChangeSelectionStr = useCallback((newSelection: string) => {
+        setCurrentSelection(newSelection);
+    }, []);
+
+    const cursorContextExt = cursorContextExtension((context) => {
+        setCurrentCursorPosition(context.cursorPosition);
+        currentLineNumberRef.current = context.lineNumber;
+        setCurrentSelection(context.selectionStr);
+    });
+
+    const bottomPanelExtension = useBottomPanelExtension();
     const dragDropImageExtension = useDragDropImageExtension({
         onImageDrop: handleImageDrop,
     });
     const clipboardImageExtension = useClipboardImageExtension({
         onImagePaste: handleClipboardImagePaste,
     });
-=======
-    const bottomPanelExtension = useBottomPanelExtension();
->>>>>>> upstream/main
 
     const extensions = useMemo(() => {
         let _extensions = [
@@ -419,24 +438,7 @@ function MarkSlidesEditor(
             // lintGutter(),
             extendedMarkdownLanguage,
             EditorView.lineWrapping,
-            // cursorContextExtension((cursorContext) => {
-            //     const { cursorPosition, lineNumber, selectionStr } =
-            //         cursorContext;
-
-            //     // NOTE: Add something to use these values
-            // }),
-            slideInfoExtension((slideInfo) => {
-                if (previewRef.current) {
-                    previewRef.current.setCurrentPage(
-                        slideInfo.currentPageNumber,
-                        isSyncCurrentPage
-                    );
-                }
-
-                if (!!onChangeSlideInfo) {
-                    onChangeSlideInfo(slideInfo);
-                }
-            }),
+            cursorContextExt,
             bottomPanelExtension,
             dragDropImageExtension,
             clipboardImageExtension,
@@ -554,6 +556,7 @@ function MarkSlidesEditor(
                         config={config}
                         content={value ?? ''}
                         onClickSlide={handleClickSlide}
+                        currentPageNumber={slideInfo?.currentPageNumber}
                     />
                 </PreviewContainer>
 

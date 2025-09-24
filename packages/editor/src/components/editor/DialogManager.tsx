@@ -8,11 +8,15 @@ export interface DialogConfig {
     isOpen: boolean;
 }
 
+interface VegaSpec {
+    [key: string]: any;
+}
+
 export interface DialogManagerProps {
     activeDialog: string | null;
     onCloseDialog: () => void;
     onImageSelect?: (imageMarkdown: string) => void;
-    onVegaSelect?: (spec: any) => void;
+    onVegaSelect?: (spec: VegaSpec) => void;
     documentId?: string;
 }
 
