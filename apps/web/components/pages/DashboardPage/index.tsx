@@ -200,12 +200,15 @@ function Dashboard() {
         }
     };
 
-    const handleFileImport = async (file: File, folderId?: string | null) => {
+    const handleFileImport = async (files: File[], folderId?: string | null) => {
         try {
-            await dispatch(importDocument({
-                file,
-                folderId: folderId || null,
-            })).unwrap();
+            // 여러 파일을 순차적으로 임포트
+            for (const file of files) {
+                await dispatch(importDocument({
+                    file,
+                    folderId: folderId || null,
+                })).unwrap();
+            }
 
             // 새로고침
             dispatch(fetchDashboardItems({
@@ -218,8 +221,8 @@ function Dashboard() {
 
             setIsFileImportOpen(false);
         } catch (error) {
-            console.error('Failed to import document:', error);
-            alert('Failed to import document');
+            console.error('Failed to import documents:', error);
+            alert('Failed to import documents');
         }
     };
 

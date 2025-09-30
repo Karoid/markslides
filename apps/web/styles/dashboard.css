@@ -481,6 +481,126 @@
     margin-top: 2rem;
 }
 
+/* File Import Modal Styles */
+.file-drop-zone {
+    border: 2px dashed #ced4da;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.file-drop-zone.drag-over {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+.file-input-container {
+    position: relative;
+}
+
+.file-input-label {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    margin-bottom: 0.5rem;
+}
+
+.file-input-label:hover {
+    background: #0056b3;
+}
+
+.drop-zone-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.selected-files-list {
+    margin-bottom: 1.5rem;
+}
+
+.selected-files-list h3 {
+    margin: 0 0 1rem 0;
+    color: #495057;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.files-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+    background: white;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.file-name {
+    font-weight: 500;
+    color: #212529;
+    word-break: break-all;
+}
+
+.file-size {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.remove-file-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.remove-file-btn:hover:not(:disabled) {
+    background: #f8d7da;
+    color: #c82333;
+}
+
+.remove-file-btn:disabled {
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .dashboard-header {
@@ -514,6 +634,29 @@
     .modal-content {
         margin: 1rem;
         padding: 1.5rem;
+    }
+
+    .file-drop-zone {
+        padding: 1.5rem;
+    }
+
+    .files-list {
+        max-height: 150px;
+    }
+
+    .file-item {
+        padding: 0.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .file-info {
+        width: 100%;
+    }
+
+    .remove-file-btn {
+        align-self: flex-end;
     }
 
     .pagination-controls {

@@ -7,56 +7,109 @@ interface FileImportModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentFolderId?: string | null;
-    onImport: (file: File, folderId?: string | null) => void;
+    onImport: (files: File[], folderId?: string | null) => void;
 }
 
 function FileImportModal({ isOpen, onClose, currentFolderId, onImport }: FileImportModalProps) {
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isDragOver, setIsDragOver] = useState(false);
+
+    const validateFiles = (files: File[]): { validFiles: File[], invalidFiles: string[] } => {
+        const allowedExtensions = ['.md', '.marp'];
+        const validFiles: File[] = [];
+        const invalidFiles: string[] = [];
+
+        files.forEach(file => {
+            const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+            if (allowedExtensions.includes(fileExtension)) {
+                validFiles.push(file);
+            } else {
+                invalidFiles.push(file.name);
+            }
+        });
+
+        return { validFiles, invalidFiles };
+    };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const allowedExtensions = ['.md', '.marp'];
-            const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+        const files = Array.from(event.target.files || []);
+        if (files.length > 0) {
+            const { validFiles, invalidFiles } = validateFiles(files);
 
-            if (!allowedExtensions.includes(fileExtension)) {
-                setError('Please select a markdown (.md) or Marp (.marp) file');
+            if (invalidFiles.length > 0) {
+                setError(`Invalid file types: ${invalidFiles.join(', ')}. Only .md and .marp files are supported.`);
                 return;
             }
 
-            setSelectedFile(file);
+            setSelectedFiles(prev => [...prev, ...validFiles]);
             setError(null);
         }
     };
 
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragOver(false);
+
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+            const { validFiles, invalidFiles } = validateFiles(files);
+
+            if (invalidFiles.length > 0) {
+                setError(`Invalid file types: ${invalidFiles.join(', ')}. Only .md and .marp files are supported.`);
+                return;
+            }
+
+            setSelectedFiles(prev => [...prev, ...validFiles]);
+            setError(null);
+        }
+    };
+
+    const removeFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+        setError(null);
+    };
+
     const handleImport = async () => {
-        if (!selectedFile) return;
+        if (selectedFiles.length === 0) return;
 
         setIsProcessing(true);
         setError(null);
 
         try {
-            const content = await selectedFile.text();
+            // 각 파일의 유효성 검증
+            for (const file of selectedFiles) {
+                const content = await file.text();
 
-            // Basic validation - .md 파일은 marp 설정이 선택사항, .marp 파일은 필수
-            const isMarpFile = selectedFile.name.toLowerCase().endsWith('.marp');
-            if (isMarpFile && !content.includes('marp: true') && !content.includes('marp:')) {
-                throw new Error('Marp files must contain valid marp configuration');
+                // Basic validation - .md 파일은 marp 설정이 선택사항, .marp 파일은 필수
+                const isMarpFile = file.name.toLowerCase().endsWith('.marp');
+                if (isMarpFile && !content.includes('marp: true') && !content.includes('marp:')) {
+                    throw new Error(`${file.name}: Marp files must contain valid marp configuration`);
+                }
             }
 
-            onImport(selectedFile, currentFolderId);
+            onImport(selectedFiles, currentFolderId);
             handleClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to import file');
+            setError(err instanceof Error ? err.message : 'Failed to import files');
         } finally {
             setIsProcessing(false);
         }
     };
 
     const handleClose = () => {
-        setSelectedFile(null);
+        setSelectedFiles([]);
         setError(null);
         setIsProcessing(false);
         onClose();
@@ -65,7 +118,7 @@ function FileImportModal({ isOpen, onClose, currentFolderId, onImport }: FileImp
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
             handleClose();
-        } else if (e.key === 'Enter' && selectedFile && !isProcessing) {
+        } else if (e.key === 'Enter' && selectedFiles.length > 0 && !isProcessing) {
             handleImport();
         }
     };
@@ -79,31 +132,62 @@ function FileImportModal({ isOpen, onClose, currentFolderId, onImport }: FileImp
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={handleKeyPress}
             >
-                <h2>Import Presentation File</h2>
-                <p>Select a markdown (.md) or Marp (.marp) file to import as a new presentation document.</p>
+                <h2>Import Presentation Files</h2>
+                <p>Select or drag & drop multiple markdown (.md) or Marp (.marp) files to import as new presentation documents.</p>
 
-                <div className="file-input-container">
-                    <input
-                        id="file-input"
-                        type="file"
-                        accept=".md,.marp"
-                        onChange={handleFileSelect}
-                        disabled={isProcessing}
-                        aria-describedby="file-help"
-                    />
-                    <label htmlFor="file-input" className="file-input-label">
-                        Choose file...
-                    </label>
-                    <p id="file-help" className="file-help-text">
-                        Supported formats: .md, .marp
-                    </p>
-
-                    {selectedFile && (
-                        <div className="file-info" role="status" aria-live="polite">
-                            Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                <div
+                    className={`file-drop-zone ${isDragOver ? 'drag-over' : ''}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                >
+                    <div className="file-input-container">
+                        <input
+                            id="file-input"
+                            type="file"
+                            accept=".md,.marp"
+                            multiple
+                            onChange={handleFileSelect}
+                            disabled={isProcessing}
+                            aria-describedby="file-help"
+                            style={{ display: 'none' }}
+                        />
+                        <label htmlFor="file-input" className="file-input-label">
+                            Choose files...
+                        </label>
+                        <p id="file-help" className="file-help-text">
+                            Supported formats: .md, .marp (multiple files allowed)
+                        </p>
+                        <div className="drop-zone-text">
+                            Or drag & drop files here
                         </div>
-                    )}
+                    </div>
                 </div>
+
+                {selectedFiles.length > 0 && (
+                    <div className="selected-files-list">
+                        <h3>Selected Files ({selectedFiles.length})</h3>
+                        <ul className="files-list">
+                            {selectedFiles.map((file, index) => (
+                                <li key={index} className="file-item">
+                                    <div className="file-info">
+                                        <span className="file-name">{file.name}</span>
+                                        <span className="file-size">({(file.size / 1024).toFixed(1)} KB)</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="remove-file-btn"
+                                        onClick={() => removeFile(index)}
+                                        disabled={isProcessing}
+                                        aria-label={`Remove ${file.name}`}
+                                    >
+                                        ×
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
                 {error && (
                     <div className="error-message" role="alert">
@@ -121,10 +205,10 @@ function FileImportModal({ isOpen, onClose, currentFolderId, onImport }: FileImp
                     </button>
                     <button
                         onClick={handleImport}
-                        disabled={!selectedFile || isProcessing}
+                        disabled={selectedFiles.length === 0 || isProcessing}
                         className="btn-primary"
                     >
-                        {isProcessing ? 'Importing...' : 'Import'}
+                        {isProcessing ? `Importing ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}...` : `Import ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}`}
                     </button>
                 </div>
             </div>
